@@ -1,0 +1,654 @@
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const DATA_FILE = path.join(__dirname, 'data', 'studio_data.json');
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Ensure data directory exists
+if (!fs.existsSync(path.join(__dirname, 'data'))) {
+  fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
+}
+
+// Initial seed data with Sai Graphics business details
+const initialData = {
+  settings: {
+    brandName: "SAI GRAPHICS",
+    businessType: "PHOTOGRAPHY, POST PRODUCTION & EDITING LAB",
+    tagline: "Transforming Moments Into Masterpieces.",
+    subTagline: "Your Vision, Our Creativity, Perfectly Crafted.",
+    aboutDescription: "SAIGRAPHICS is a post production studio in Bhagalpur, Bihar, focused on professional photo editing, video post production, creative graphics and visual finishing.",
+    mobileNumber: "8809216991",
+    whatsappNumber: "8809216991",
+    email: "saigraphicsbgp@gmail.com",
+    address: "Sai Graphics, 1st Floor, Sah Market, Picture Place, Bhagalpur, Bihar, India.",
+    shortAddress: "1st Floor, Sah Market, Picture Place, Bhagalpur, Bihar.",
+    instagram: "https://www.instagram.com/sai_graphics_editing_lab?stkn=dHIwNnM3bDk5ODB3&utm_source=qr",
+    facebook: "https://www.facebook.com/share/1FEZeuXgsa/",
+    googleMapsUrl: "https://maps.app.goo.gl/XHmTYuWcsr7nB44e8?g_st=iwb",
+    openingHours: "Mon - Sat: 9:30 AM - 8:30 PM | Sunday: By Appointment"
+  },
+  services: [
+    {
+      id: "srv-1",
+      number: "01",
+      title: "Professional Photo Editing",
+      category: "Photography",
+      shortDesc: "High-end studio retouching, dynamic range recovery, composition refinement, and precision exposure correction.",
+      fullDesc: "From commercial catalogs to personal portraits, our studio utilizes advanced skin tone separation, micro-contrast enhancement, and background cleanup to achieve pristine publication-grade standards.",
+      icon: "Image",
+      imageUrl: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=1200&q=80",
+      featured: true,
+      turnaround: "24-48 Hours"
+    },
+    {
+      id: "srv-2",
+      number: "02",
+      title: "Wedding Photo Editing",
+      category: "Weddings",
+      shortDesc: "Bespoke ceremony and reception photo finishing honoring traditional emotions and royal Indian color palettes.",
+      fullDesc: "Specialized in Indian wedding rituals (Haldi, Mehendi, Sangeet, Jaimala, and Bidaai). We balance rich maroons, gold tones, and warm skin complexions while retaining crisp details in heavy embroidery.",
+      icon: "Camera",
+      imageUrl: "/assets/aistudio/wedding_photo_editing.jpg",
+      featured: true,
+      turnaround: "3-5 Business Days"
+    },
+    {
+      id: "srv-3",
+      number: "03",
+      title: "Cinematic Video Editing",
+      category: "Cinema & Film",
+      shortDesc: "Rhythmic narrative pacing, seamless scene transitions, multi-cam synchronization, and emotive score alignment.",
+      fullDesc: "Crafting captivating wedding teasers, highlights, and full-length cinematic films. We craft dramatic storytelling arcs using slow-motion ramps, sound design, and master-level scene pacing.",
+      icon: "Film",
+      imageUrl: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
+      featured: true,
+      turnaround: "5-7 Days"
+    },
+    {
+      id: "srv-4",
+      number: "04",
+      title: "Video Post Production",
+      category: "Post Production",
+      shortDesc: "End-to-end mastering including audio mastering, dialogue cleanup, noise suppression, and subtitle formatting.",
+      fullDesc: "Comprehensive studio visual finishing for commercial ads, YouTube creators, corporate films, and documentaries. Multi-track audio sweetening, high-fidelity render outputs up to 8K HDR.",
+      icon: "Sliders",
+      imageUrl: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=1200&q=80",
+      featured: false,
+      turnaround: "4-6 Days"
+    },
+    {
+      id: "srv-5",
+      number: "05",
+      title: "Creative Graphic Design",
+      category: "Graphics",
+      shortDesc: "Distinctive brand identities, promotional banners, custom wedding invitations, posters, and digital creatives.",
+      fullDesc: "High-impact visual collateral blending modern typography with rich Indian royal embellishments. Vector artwork, social media marketing kits, event backdrops, and printed collateral.",
+      icon: "PenTool",
+      imageUrl: "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=1200&q=80",
+      featured: false,
+      turnaround: "24-48 Hours"
+    },
+    {
+      id: "srv-6",
+      number: "06",
+      title: "Video Graphy & Candid Photography",
+      category: "Production",
+      shortDesc: "Cinematic 4K on-location recording, authentic DJI drone 360° aerial views, and candid moment capture by seasoned cinematographers.",
+      fullDesc: "On-field crew available across Bhagalpur and Bihar for weddings, pre-weddings, corporate celebrations, and cultural festivals with high-speed lenses, gimbals, and wireless audio setups.",
+      icon: "Video",
+      imageUrl: "/assets/aistudio/DJI_0105_____d7ea3f0c.jpg",
+      featured: true,
+      turnaround: "Event Dependent"
+    },
+    {
+      id: "srv-7",
+      number: "07",
+      title: "Wedding Album Designing",
+      category: "Albums & Print",
+      shortDesc: "Luxury lay-flat photobook layouts with metallic embossing, panoramic spreads, and archival photo preservation.",
+      fullDesc: "Artfully designed page-by-page album spreads that narrate your love story in chronological poetry. Printed on premium velvet matte, non-tear, and metallic-lustre photographic papers.",
+      icon: "BookOpen",
+      imageUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=80",
+      featured: true,
+      turnaround: "3-5 Days"
+    },
+    {
+      id: "srv-8",
+      number: "08",
+      title: "Photo Retouching",
+      category: "Retouching",
+      shortDesc: "Frequency separation skin refinement, stray hair removal, eye brightening, and body contour perfection.",
+      fullDesc: "Editorial-grade magazine retouching preserving authentic skin texture without artificial plastic looks. Ideal for bridal portraits, beauty shoots, modeling folios, and executive headshots.",
+      icon: "Sparkles",
+      imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80",
+      featured: false,
+      turnaround: "24 Hours"
+    },
+    {
+      id: "srv-9",
+      number: "09",
+      title: "Color Grading",
+      category: "Color Lab",
+      shortDesc: "DaVinci Resolve color science, custom cinematic LUT development, tone matching, and HDR mastering.",
+      fullDesc: "Transform flat log footage into deep cinematic magic with film emulation, customized warm gold highlights, rich teal-shadow balance, and broadcast legal gamuts (Rec.709 & DCI-P3).",
+      icon: "Palette",
+      imageUrl: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1200&q=80",
+      featured: true,
+      turnaround: "48-72 Hours"
+    },
+    {
+      id: "srv-10",
+      number: "10",
+      title: "Visual Effects (VFX)",
+      category: "VFX & Motion",
+      shortDesc: "Dynamic title animations, screen replacements, sky replacements, slow-motion stabilization, and 3D particles.",
+      fullDesc: "Elevate promotional clips and wedding teasers with sparkling light particle effects, dreamy smoke aesthetics, smooth speed ramps, object tracking, and seamless rotoscoping.",
+      icon: "Wand2",
+      imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+      featured: false,
+      turnaround: "3-5 Days"
+    }
+  ],
+  portfolio: [
+    {
+      id: "port-aarush-sneha",
+      title: "Aarush & Sneha – 4K Royal Wedding Highlights",
+      category: "Wedding Photography",
+      description: "Emotional wedding highlight featuring romantic portraits, ring exchange, stage fireworks, and 4K slow-motion grading produced with Anjan Studio and mastered at Sai Graphics Lab.",
+      imageUrl: "/assets/aistudio/DJI_0105_____d7ea3f0c.jpg",
+      client: "Aarush & Sneha (Hotel Hill View)",
+      year: "2026",
+      featured: true
+    },
+    {
+      id: "port-dji-aerial",
+      title: "DJI 360° Aerial Drone Cinema & Heritage Panorama",
+      category: "Cinematic Wedding Films",
+      description: "Ultra-wide 360° aerial cinematography and architectural panorama captured with DJI cinema drone by Sai Graphics Production.",
+      imageUrl: "/assets/aistudio/DJI_0105_____d7ea3f0c.jpg",
+      client: "Sai Graphics Production",
+      year: "2026",
+      featured: true
+    },
+    {
+      id: "port-1",
+      title: "Royal Maithili Royal Wedding",
+      category: "Wedding Photography",
+      description: "Complete ceremonial coverage featuring royal maroons, traditional gold jewelry detailing, and emotional moments.",
+      imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80",
+      client: "Aman & Sneha",
+      year: "2026",
+      featured: true
+    },
+    {
+      id: "port-2",
+      title: "The Eternal Vow – 4K Film",
+      category: "Cinematic Wedding Films",
+      description: "5-minute cinematic highlight reel featuring high-speed 120fps drone sweeps, slow motion sindoor ceremony, and custom score.",
+      imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+      videoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ", // embeddable preview demo
+      client: "Vikram & Pooja",
+      year: "2026",
+      featured: true
+    },
+    {
+      id: "port-3",
+      title: "Sunset Symphony by the Ganges",
+      category: "Pre-Wedding Shoots",
+      description: "Sunset pre-wedding shoot captured across Vikramshila ruins and Ganges riverbank with soft golden backlight.",
+      imageUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+      client: "Rahul & Tanya",
+      year: "2026",
+      featured: true
+    },
+    {
+      id: "port-4",
+      title: "Editorial Bridal Skin Retouching",
+      category: "Professional Photo Editing",
+      description: "Micro-texture skin finishing preserving authentic skin pores while eliminating blemishes, matched to high-fashion print standards.",
+      imageUrl: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=1200&q=80",
+      client: "Kavya Sharma",
+      year: "2026",
+      featured: true
+    },
+    {
+      id: "port-5",
+      title: "Silk City Royal Brand Identity",
+      category: "Creative Graphic Design",
+      description: "Luxury Bhagalpur silk brand logo, golden embossed catalogue layout, and social media showcase deck.",
+      imageUrl: "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=1200&q=80",
+      client: "Bhagalpur Silk Heritage",
+      year: "2026",
+      featured: false
+    },
+    {
+      id: "port-6",
+      title: "The Regal Velvet Photobook",
+      category: "Album Design",
+      description: "Panoramic 18x24 lay-flat photo book with gold leaf edge gilding and velvet hardcover presentation.",
+      imageUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=80",
+      client: "Rajesh & Priya",
+      year: "2026",
+      featured: true
+    },
+    {
+      id: "port-7",
+      title: "Haldi & Sangeet Vibrance",
+      category: "Wedding Photography",
+      description: "Dynamic marigold flower splashes and spontaneous joyful smiles color-graded for vibrant warmth.",
+      imageUrl: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80",
+      client: "Aditya & Ritu",
+      year: "2025",
+      featured: false
+    },
+    {
+      id: "port-8",
+      title: "Nocturnal Glow Teaser Film",
+      category: "Cinematic Wedding Films",
+      description: "Night reception fireworks, low-light gimbal cinematography, and rich DaVinci Resolve color timing.",
+      imageUrl: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=1200&q=80",
+      client: "Karan & Meera",
+      year: "2025",
+      featured: false
+    }
+  ],
+  beforeAfterDemos: [
+    {
+      id: "ba-1",
+      title: "Bridal Portrait Color Grade & Retouch",
+      service: "Wedding Photo Editing & Retouching",
+      beforeLabel: "RAW Camera Capture",
+      afterLabel: "Sai Graphics Studio Finish",
+      beforeImage: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=50&sat=-60",
+      afterImage: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=90",
+      description: "Skin luminance balancing, jewelry micro-contrast enhancement, and royal warm color grading."
+    },
+    {
+      id: "ba-2",
+      title: "Cinematic Sunset Golden Hour Match",
+      service: "Cinematic Color Grading",
+      beforeLabel: "Flat Log Profile",
+      afterLabel: "Graded Film Emulation",
+      beforeImage: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=50&sat=-40&con=-20",
+      afterImage: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=95",
+      description: "Highlights roll-off management, skin-tone preservation, and Kodak 2383 cinematic print feel."
+    }
+  ],
+  enquiries: [
+    {
+      id: "enq-101",
+      createdAt: "2026-10-28T14:20:00.000Z",
+      name: "Saurabh Kumar",
+      phone: "9876543210",
+      email: "saurabh.patna@gmail.com",
+      service: "Wedding Photo & Video Editing",
+      eventDate: "2026-12-15",
+      budget: "₹35,000 - ₹50,000",
+      message: "Looking for complete wedding film highlight editing and 2 designer photobooks for a wedding in Bhagalpur.",
+      status: "Contacted"
+    },
+    {
+      id: "enq-102",
+      createdAt: "2026-10-29T11:45:00.000Z",
+      name: "Ananya Roy",
+      phone: "9123456780",
+      email: "ananya.roy@outlook.com",
+      service: "Color Grading",
+      eventDate: "2026-11-20",
+      budget: "₹15,000 - ₹25,000",
+      message: "We have shot a 15-minute short film on Blackmagic 6K RAW. Need professional color grading in DaVinci Resolve.",
+      status: "New"
+    }
+  ],
+  testimonials: [
+    {
+      id: "rev-1",
+      name: "Rajiv & Priya Sharma",
+      location: "Sah Market, Bhagalpur",
+      role: "Wedding Couple",
+      serviceUsed: "4K Cinematic Wedding Film & Teaser",
+      rating: 5,
+      quote: "Sai Graphics turned our wedding footage into pure Bollywood-grade cinema! The color grade on our Haldi ceremony brought out the golden marigold tones so beautifully without blowing out our skin tones. Our relatives couldn't stop replaying the 4-minute teaser. Unbelievable turnaround in just 4 days!",
+      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
+      turnaround: "Delivered in 4 Days",
+      date: "October 2026",
+      verified: true
+    },
+    {
+      id: "rev-2",
+      name: "Vikramaditya Roy",
+      location: "Kolkata & Patna",
+      role: "Senior Wedding Cinematographer",
+      serviceUsed: "Multi-Cam Video Post-Production & Color Grading",
+      rating: 5,
+      quote: "As a traveling photographer covering luxury destination weddings across Bihar and Bengal, I outsource all my RAW FCP and DaVinci post-production exclusively to Sai Graphics. Their timeline speed, seamless multi-cam audio synchronization, and tone curves are superior to any studio in Eastern India.",
+      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80",
+      turnaround: "B2B Studio Partner",
+      date: "September 2026",
+      verified: true
+    },
+    {
+      id: "rev-3",
+      name: "Ananya & Manish Verma",
+      location: "Patna, Bihar",
+      role: "Newlywed Couple",
+      serviceUsed: "Luxury Lay-Flat Wedding Album Designing",
+      rating: 5,
+      quote: "The 12x36 metallic photobook designed by Sai Graphics is a true heirloom masterpiece. The velvet texture, emboss finish, and narrative storytelling from the Jaimala to Bidaai made my parents cry happy tears. Highly recommend their Sah Market studio for any couple!",
+      avatarUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80",
+      turnaround: "Delivered in 3 Days",
+      date: "August 2026",
+      verified: true
+    },
+    {
+      id: "rev-4",
+      name: "Amit & Shweta Singh",
+      location: "Bhagalpur, Bihar",
+      role: "Pre-Wedding Couple",
+      serviceUsed: "DJI 360° Drone Aerial Cinematography",
+      rating: 5,
+      quote: "The 360° drone shots taken over the Vikramshila Setu and Ganges riverbanks looked like a grand international film production! Their drone pilot and post-grading editor worked magic with the sunset golden hour tones. Best editing studio in Bhagalpur hands down.",
+      avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80",
+      turnaround: "Delivered in 48 Hours",
+      date: "September 2026",
+      verified: true
+    },
+    {
+      id: "rev-5",
+      name: "Rakesh Kumar",
+      location: "Sah Market, Bhagalpur",
+      role: "Commercial Studio Owner (LensCraft)",
+      serviceUsed: "Batch RAW Retouching & Color Lab Finishing",
+      rating: 5,
+      quote: "During peak wedding seasons, our studio gets 10,000+ RAW captures. Sai Graphics handles all frequency separation, clothing wrinkle correction, and album exports with surgical accuracy. Never missed a delivery deadline in 3 years of collaboration.",
+      avatarUrl: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=250&q=80",
+      turnaround: "Ongoing Enterprise Partner",
+      date: "October 2026",
+      verified: true
+    },
+    {
+      id: "rev-6",
+      name: "Dr. Sneha & Kunal Sen",
+      location: "Kahalgaon, Bihar",
+      role: "Wedding Couple",
+      serviceUsed: "Traditional Wedding Film & Instagram Reels",
+      rating: 5,
+      quote: "They understood the cultural significance of every small Maithil ritual and edited the background flute score with pinpoint emotional timing. The Instagram reels they crafted went viral in our family circles. Truly passionate artists!",
+      avatarUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=250&q=80",
+      turnaround: "Delivered in 5 Days",
+      date: "July 2026",
+      verified: true
+    }
+  ]
+};
+
+// Helper to read and write database
+function loadData() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const content = fs.readFileSync(DATA_FILE, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (!parsed.testimonials || !parsed.testimonials.length) {
+        parsed.testimonials = initialData.testimonials;
+      }
+      return parsed;
+    }
+  } catch (err) {
+    console.error("Error reading data file, resetting to defaults", err);
+  }
+  saveData(initialData);
+  return initialData;
+}
+
+function saveData(data: any) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.error("Error writing data file", err);
+  }
+}
+
+// Ensure database is initialized
+let currentData = loadData();
+
+// API ROUTES
+
+// 1. Get Public Website Settings & Content
+app.get('/api/content', (_req, res) => {
+  res.json({
+    success: true,
+    data: currentData.settings
+  });
+});
+
+// Update Settings (Admin protected)
+app.put('/api/content', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token || !token.includes('saigraphics-admin-token')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized admin access' });
+  }
+
+  currentData.settings = { ...currentData.settings, ...req.body };
+  saveData(currentData);
+  res.json({ success: true, data: currentData.settings });
+});
+
+// 2. Services Endpoints
+app.get('/api/services', (_req, res) => {
+  res.json({ success: true, data: currentData.services });
+});
+
+app.put('/api/services/:id', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token || !token.includes('saigraphics-admin-token')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  const { id } = req.params;
+  const index = currentData.services.findIndex((s: any) => s.id === id);
+  if (index !== -1) {
+    currentData.services[index] = { ...currentData.services[index], ...req.body };
+    saveData(currentData);
+    return res.json({ success: true, data: currentData.services[index] });
+  }
+  res.status(404).json({ success: false, error: 'Service not found' });
+});
+
+// 3. Portfolio Endpoints
+app.get('/api/portfolio', (_req, res) => {
+  res.json({
+    success: true,
+    data: currentData.portfolio,
+    beforeAfter: currentData.beforeAfterDemos
+  });
+});
+
+app.post('/api/portfolio', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token || !token.includes('saigraphics-admin-token')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  const newItem = {
+    id: `port-${Date.now()}`,
+    ...req.body,
+    featured: req.body.featured ?? false,
+    year: req.body.year || new Date().getFullYear().toString()
+  };
+
+  currentData.portfolio.unshift(newItem);
+  saveData(currentData);
+  res.status(201).json({ success: true, data: newItem });
+});
+
+app.delete('/api/portfolio/:id', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token || !token.includes('saigraphics-admin-token')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  const { id } = req.params;
+  currentData.portfolio = currentData.portfolio.filter((p: any) => p.id !== id);
+  saveData(currentData);
+  res.json({ success: true });
+});
+
+// 3.5. Testimonials & Client Reviews Endpoints
+app.get('/api/testimonials', (_req, res) => {
+  const reviews = currentData.testimonials && currentData.testimonials.length
+    ? currentData.testimonials
+    : initialData.testimonials;
+  res.json({ success: true, data: reviews });
+});
+
+app.post('/api/testimonials', (req, res) => {
+  const { name, role, serviceUsed, rating, quote, location } = req.body;
+  if (!name || !quote) {
+    return res.status(400).json({ success: false, error: 'Name and feedback quote are required' });
+  }
+
+  const newReview = {
+    id: `rev-${Date.now()}`,
+    name: name.trim(),
+    role: (role || 'Verified Client').trim(),
+    serviceUsed: (serviceUsed || 'Post Production Service').trim(),
+    location: (location || 'Bhagalpur, Bihar').trim(),
+    rating: Number(rating) || 5,
+    quote: quote.trim(),
+    avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80`,
+    date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    turnaround: 'Recent Project',
+    verified: true
+  };
+
+  if (!currentData.testimonials) currentData.testimonials = [];
+  currentData.testimonials.unshift(newReview);
+  saveData(currentData);
+
+  res.status(201).json({
+    success: true,
+    message: 'Thank you for your review! Your review is now featured in our client trust gallery.',
+    data: newReview
+  });
+});
+
+// 4. Contact Enquiry Endpoints
+app.get('/api/enquiries', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token || !token.includes('saigraphics-admin-token')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+  res.json({ success: true, data: currentData.enquiries });
+});
+
+app.post('/api/enquiries', (req, res) => {
+  const { name, phone, email, service, eventDate, budget, message } = req.body;
+
+  if (!name || !phone) {
+    return res.status(400).json({ success: false, error: 'Name and Phone number are required' });
+  }
+
+  const newEnquiry = {
+    id: `enq-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    name: name.trim(),
+    phone: phone.trim(),
+    email: (email || '').trim(),
+    service: service || 'General Inquiry',
+    eventDate: eventDate || '',
+    budget: budget || '',
+    message: (message || '').trim(),
+    status: 'New'
+  };
+
+  currentData.enquiries.unshift(newEnquiry);
+  saveData(currentData);
+
+  res.status(201).json({
+    success: true,
+    message: "Thank you for contacting Sai Graphics. We have received your inquiry and will reach out shortly!",
+    data: newEnquiry
+  });
+});
+
+app.patch('/api/enquiries/:id/status', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token || !token.includes('saigraphics-admin-token')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  const { id } = req.params;
+  const { status } = req.body;
+  const enquiry = currentData.enquiries.find((e: any) => e.id === id);
+
+  if (enquiry) {
+    enquiry.status = status;
+    saveData(currentData);
+    return res.json({ success: true, data: enquiry });
+  }
+  res.status(404).json({ success: false, error: 'Enquiry not found' });
+});
+
+app.delete('/api/enquiries/:id', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token || !token.includes('saigraphics-admin-token')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  const { id } = req.params;
+  currentData.enquiries = currentData.enquiries.filter((e: any) => e.id !== id);
+  saveData(currentData);
+  res.json({ success: true });
+});
+
+// 5. Admin Authentication Endpoint
+app.post('/api/auth/login', (req, res) => {
+  const { password } = req.body;
+  // Default studio admin pin / password
+  // Allowed keys: 'admin8809', 'saigraphics', '8809216991'
+  if (password === 'admin8809' || password === 'saigraphics' || password === '8809216991') {
+    return res.json({
+      success: true,
+      token: 'saigraphics-admin-token-' + Date.now(),
+      user: {
+        name: 'Sai Graphics Admin',
+        studio: 'Bhagalpur Lab',
+        role: 'Super Admin'
+      }
+    });
+  }
+  res.status(401).json({ success: false, error: 'Invalid studio credentials' });
+});
+
+// Mount Vite or serve static dist
+async function startServer() {
+  const isProduction = process.env.NODE_ENV === 'production' || (fs.existsSync(path.join(__dirname, 'dist')) && process.env.NODE_ENV !== 'development');
+  if (isProduction && fs.existsSync(path.join(__dirname, 'dist'))) {
+    app.use(express.static(path.join(__dirname, 'dist')));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    });
+  } else {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Sai Graphics Post Production Lab server listening on port ${PORT}`);
+  });
+}
+
+startServer();

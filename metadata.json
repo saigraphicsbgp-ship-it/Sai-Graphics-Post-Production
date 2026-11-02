@@ -1,0 +1,8 @@
+{
+  "name": "Sai Graphics – Post Production & Editing Lab",
+  "description": "Premium post production studio and editing lab in Bhagalpur, Bihar. Specializing in cinematic video editing, wedding photo editing, creative graphics, color grading, and visual finishing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
