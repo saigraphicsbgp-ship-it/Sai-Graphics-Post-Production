@@ -33,28 +33,28 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ demos }) =
   };
 
   return (
-    <div className="py-16 bg-[#07080d] border-t border-white/5 relative">
+    <div className="py-16 bg-[var(--brand-bg)] border-t border-secondary relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-[#d4af37]/30 mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft border border-[#d4af37]/30 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
               <span className="text-xs uppercase tracking-widest text-[#f3e5ab] font-semibold">
                 Visual Finishing Lab
               </span>
             </div>
-            <h3 className="font-cinzel text-3xl sm:text-4xl font-bold text-white">
+            <h3 className="font-cinzel text-3xl sm:text-4xl font-bold text-primary">
               BEFORE & AFTER <span className="text-gold-gradient">MASTERY</span>
             </h3>
-            <p className="text-sm text-slate-300 mt-1 max-w-xl">
+            <p className="text-sm text-secondary mt-1 max-w-xl">
               Drag the interactive slider to examine real optical clarity, delicate skin-texture preservation, and cinematic color grading.
             </p>
           </div>
 
           {/* Preset Selector */}
-          <div className="flex items-center gap-2 self-start md:self-auto bg-[#0d1017] p-1.5 rounded-xl border border-white/10">
+          <div className="flex items-center gap-2 self-start md:self-auto bg-[var(--brand-bg)] p-1.5 rounded-xl border border-primary">
             {demos.map((d, idx) => (
               <button
                 key={d.id}
@@ -65,7 +65,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ demos }) =
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   activeDemoIndex === idx
                     ? 'bg-[#d4af37] text-slate-950 font-semibold'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-muted hover:text-primary'
                 }`}
               >
                 {d.title.split(' ')[0]} {d.title.split(' ')[1] || ''}
@@ -83,7 +83,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ demos }) =
               <span className="text-[#38bdf8] font-medium tracking-wide">
                 CATEGORY: {activeDemo.service.toUpperCase()}
               </span>
-              <span className="text-slate-400">
+              <span className="text-muted">
                 DRAG CENTER HANDLE TO COMPARE
               </span>
             </div>
@@ -91,7 +91,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ demos }) =
             {/* Slider Viewport */}
             <div
               ref={containerRef}
-              className="relative aspect-[16/9] sm:aspect-[21/9] rounded-xl overflow-hidden cursor-ew-resize select-none border border-white/10 bg-slate-950"
+              className="relative aspect-[16/9] sm:aspect-[21/9] rounded-xl overflow-hidden cursor-ew-resize select-none border border-primary bg-slate-950"
               onMouseDown={(e) => {
                 isDragging.current = true;
                 handleMove(e.clientX);
@@ -141,14 +141,14 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ demos }) =
                 style={{ left: `${sliderPosition}%` }}
               >
                 {/* Center Handle Badge */}
-                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-[#0d1017] border-2 border-[#d4af37] flex items-center justify-center text-white shadow-xl">
+                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-[var(--brand-bg)] border-2 border-[#d4af37] flex items-center justify-center text-primary shadow-xl">
                   <Sliders className="w-4 h-4 text-[#d4af37]" />
                 </div>
               </div>
 
               {/* Floating Labels */}
               <div className="absolute bottom-4 left-4 z-10">
-                <span className="px-3 py-1 rounded bg-black/75 backdrop-blur-md border border-white/10 text-xs font-semibold text-slate-300">
+                <span className="px-3 py-1 rounded bg-black/75 backdrop-blur-md border border-primary text-xs font-semibold text-secondary">
                   {activeDemo.beforeLabel}
                 </span>
               </div>
@@ -161,7 +161,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ demos }) =
             </div>
 
             {/* Description footnote */}
-            <p className="text-xs text-slate-400 mt-4 text-center sm:text-left">
+            <p className="text-xs text-muted mt-4 text-center sm:text-left">
               {activeDemo.description}
             </p>
           </div>

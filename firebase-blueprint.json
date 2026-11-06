@@ -1,0 +1,158 @@
+{
+  "entities": {
+    "StudioSettings": {
+      "title": "Studio Settings",
+      "description": "Global settings for Sai Graphics studio website",
+      "type": "object",
+      "properties": {
+        "brandName": { "type": "string" },
+        "businessType": { "type": "string" },
+        "tagline": { "type": "string" },
+        "subTagline": { "type": "string" },
+        "aboutDescription": { "type": "string" },
+        "mobileNumber": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "shortAddress": { "type": "string" },
+        "instagram": { "type": "string" },
+        "facebook": { "type": "string" },
+        "googleMapsUrl": { "type": "string" },
+        "openingHours": { "type": "string" }
+      },
+      "required": ["brandName", "businessType", "tagline", "aboutDescription", "mobileNumber", "whatsappNumber", "email", "address"]
+    },
+    "ServiceItem": {
+      "title": "Service Item",
+      "description": "A post-production service offered by the studio",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "number": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "shortDesc": { "type": "string" },
+        "fullDesc": { "type": "string" },
+        "icon": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "turnaround": { "type": "string" }
+      },
+      "required": ["id", "number", "title", "category", "shortDesc", "fullDesc", "icon", "imageUrl", "featured", "turnaround"]
+    },
+    "PortfolioItem": {
+      "title": "Portfolio Item",
+      "description": "A showcase project in the studio portfolio",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "client": { "type": "string" },
+        "year": { "type": "string" },
+        "date": { "type": "string" },
+        "featured": { "type": "boolean" }
+      },
+      "required": ["id", "title", "category", "description", "imageUrl"]
+    },
+    "BeforeAfterDemo": {
+      "title": "Before/After Demo",
+      "description": "A demonstration of editing results",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "service": { "type": "string" },
+        "beforeLabel": { "type": "string" },
+        "afterLabel": { "type": "string" },
+        "beforeImage": { "type": "string" },
+        "afterImage": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "title", "service", "beforeLabel", "afterLabel", "beforeImage", "afterImage", "description"]
+    },
+    "Enquiry": {
+      "title": "Customer Enquiry",
+      "description": "A project enquiry from a potential client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "service": { "type": "string" },
+        "eventDate": { "type": "string" },
+        "budget": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["New", "Contacted", "In Progress", "Completed"] }
+      },
+      "required": ["id", "createdAt", "name", "phone", "service", "status"]
+    },
+    "NewsletterSubscriber": {
+      "title": "Newsletter Subscriber",
+      "description": "A user subscribed to studio updates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "subscribedAt": { "type": "string", "format": "date-time" },
+        "source": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Unsubscribed"] }
+      },
+      "required": ["id", "email", "subscribedAt", "status"]
+    },
+    "Testimonial": {
+      "title": "Client Testimonial",
+      "description": "A review from a client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "role": { "type": "string" },
+        "serviceUsed": { "type": "string" },
+        "rating": { "type": "number" },
+        "quote": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "date": { "type": "string" },
+        "turnaround": { "type": "string" },
+        "verified": { "type": "boolean" }
+      },
+      "required": ["id", "name", "quote", "rating"]
+    }
+  },
+  "firestore": {
+    "/settings/global": {
+      "schema": "StudioSettings",
+      "description": "Global studio settings document"
+    },
+    "/services/{serviceId}": {
+      "schema": "ServiceItem",
+      "description": "Collection of studio services"
+    },
+    "/portfolio/{portfolioId}": {
+      "schema": "PortfolioItem",
+      "description": "Collection of portfolio works"
+    },
+    "/beforeAfter/{demoId}": {
+      "schema": "BeforeAfterDemo",
+      "description": "Collection of before/after demonstrations"
+    },
+    "/enquiries/{enquiryId}": {
+      "schema": "Enquiry",
+      "description": "Collection of client enquiries"
+    },
+    "/newsletter/{subscriberId}": {
+      "schema": "NewsletterSubscriber",
+      "description": "Collection of newsletter subscribers"
+    },
+    "/testimonials/{testimonialId}": {
+      "schema": "Testimonial",
+      "description": "Collection of client testimonials"
+    }
+  }
+}

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { PortfolioItem } from '../types';
 import { useAesthetic } from '../context/AestheticContext';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { GalleryUploadModal } from './GalleryUploadModal';
 import {
   Film,
   Camera,
@@ -16,40 +20,56 @@ import {
   LayoutGrid,
   Tv,
   Sparkles,
-  Sliders
+  Sliders,
+  Upload,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Shield
 } from 'lucide-react';
 
 interface PortfolioGalleryProps {
   portfolio: PortfolioItem[];
   whatsappNumber: string;
+  onRefreshPortfolio?: () => Promise<void>;
+  onOpenAdmin?: () => void;
 }
 
 export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
   portfolio,
-  whatsappNumber
+  whatsappNumber,
+  onRefreshPortfolio,
+  onOpenAdmin,
 }) => {
   const { config, galleryViewMode, setGalleryViewMode } = useAesthetic();
+  const { user, isAdmin } = useAuth();
+
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [spotlightIndex, setSpotlightIndex] = useState<number>(0);
+  const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const [localPortfolio, setLocalPortfolio] = useState<PortfolioItem[]>(portfolio);
+  const [toastMessage, setToastMessage] = useState<string>('');
+
+  // Keep local portfolio synced with external props
+  useEffect(() => {
+    setLocalPortfolio(portfolio);
+  }, [portfolio]);
 
   const categories = [
     'All',
     'Wedding Photography',
-    'Cinematic Wedding Films',
-    'Pre-Wedding Shoots',
-    'Professional Photo Editing',
-    'Creative Graphic Design',
-    'Album Design'
+    'Pre-Wedding Photography',
+    'Cinematic Wedding Videos'
   ];
 
-  const filteredItems = portfolio.filter((item) => {
+  const filteredItems = localPortfolio.filter((item) => {
     if (selectedCategory === 'All') return true;
     return item.category === selectedCategory;
   });
 
   const activeItem = activeItemIndex !== null ? filteredItems[activeItemIndex] : null;
-  const currentSpotlight = filteredItems[spotlightIndex] || filteredItems[0] || portfolio[0];
+  const currentSpotlight = filteredItems[spotlightIndex] || filteredItems[0] || localPortfolio[0];
 
   // Keep spotlightIndex in bounds when category changes
   useEffect(() => {
@@ -74,14 +94,49 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeItemIndex, filteredItems.length]);
 
+  // Handle successful photo upload
+  const handleUploadSuccess = (newItem: PortfolioItem) => {
+    setLocalPortfolio((prev) => [newItem, ...prev.filter((p) => p.id !== newItem.id)]);
+    setSelectedCategory(newItem.category);
+    setToastMessage(`✓ "${newItem.title}" added to gallery!`);
+    setTimeout(() => setToastMessage(''), 4000);
+    onRefreshPortfolio?.();
+  };
+
+  // Handle photo deletion by admin
+  const handleDeleteProject = async (id: string, title: string) => {
+    if (!isAdmin) return;
+    if (!window.confirm(`Are you sure you want to delete "${title}" from the gallery?`)) return;
+
+    try {
+      await deleteDoc(doc(db, 'portfolio', id));
+      setLocalPortfolio((prev) => prev.filter((p) => p.id !== id));
+      if (activeItemIndex !== null) setActiveItemIndex(null);
+      setToastMessage(`Deleted "${title}" from gallery.`);
+      setTimeout(() => setToastMessage(''), 3000);
+      onRefreshPortfolio?.();
+    } catch (err: any) {
+      console.error('Failed to delete portfolio item:', err);
+      alert(`Delete failed: ${err.message}`);
+    }
+  };
+
   return (
-    <section id="portfolio" className="relative py-24 bg-[#08090d] border-t border-white/5 transition-colors duration-500">
+    <section id="portfolio" className="relative py-24 bg-[var(--brand-bg)] border-t border-primary transition-colors duration-500">
       <div id="gallery" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        {/* Toast Alert Banner */}
+        {toastMessage && (
+          <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-slate-900 border border-[#d4af37] text-white shadow-2xl flex items-center gap-3 animate-fade-in text-xs font-semibold">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-4">
           <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft border"
             style={{ borderColor: `${config.primaryColor}55` }}
           >
             <span
@@ -96,17 +151,30 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
             </span>
           </div>
 
-          <h2 className="font-cinzel text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="font-cinzel text-4xl sm:text-5xl font-extrabold text-primary tracking-tight">
             PORTFOLIO & <span className="text-gold-gradient">GALLERY</span>
           </h2>
 
-          <p className="text-slate-300 text-base sm:text-lg leading-relaxed" style={{ textWrap: 'balance' }}>
+          <p className="text-secondary text-base sm:text-lg leading-relaxed" style={{ textWrap: 'balance' }}>
             A curated showcase of royal weddings, dramatic cinematography, fashion edits, and bespoke heirloom albums finished by Sai Graphics.
           </p>
+
+          {/* Primary Quick Action Button to Upload Photo */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full font-bold text-xs uppercase tracking-wider text-slate-950 bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#c59b27] hover:brightness-105 active:scale-95 transition-all shadow-xl cursor-pointer"
+              style={{ boxShadow: `0 0 25px ${config.glowColor}` }}
+            >
+              <Upload className="w-4 h-4 text-slate-950" />
+              <span>Upload Photo to Gallery / फोटो अपलोड करें</span>
+              <Sparkles className="w-3.5 h-3.5 text-slate-950" />
+            </button>
+          </div>
         </div>
 
         {/* View Switcher & Category Toolbar */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-10 p-3 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-10 p-3 rounded-2xl bg-muted border border-primary backdrop-blur-md">
           
           {/* Category Filter Pills */}
           <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto w-full lg:w-auto pb-1 lg:pb-0 scrollbar-none">
@@ -122,7 +190,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     isSelected
                       ? 'text-slate-950 font-bold shadow-md'
-                      : 'bg-white/[0.03] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/10'
+                      : 'bg-soft text-secondary hover:text-primary hover:bg-soft border border-primary'
                   }`}
                   style={{
                     backgroundColor: isSelected ? config.primaryColor : undefined,
@@ -135,75 +203,111 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
             })}
           </div>
 
-          {/* Interactive Layout View Mode Switcher */}
-          <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 shrink-0 self-end lg:self-auto">
-            <span className="text-[11px] font-mono text-slate-400 px-2 uppercase hidden sm:inline">
-              View Layout:
-            </span>
-
+          {/* Right Toolbar: Upload Button + Layout View Mode Switcher */}
+          <div className="flex items-center gap-2 shrink-0 self-end lg:self-auto flex-wrap">
+            
+            {/* Direct Upload Button in Toolbar */}
             <button
-              onClick={() => setGalleryViewMode('editorial')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                galleryViewMode === 'editorial'
-                  ? 'bg-white/15 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              style={{
-                color: galleryViewMode === 'editorial' ? config.secondaryColor : undefined,
-              }}
-              title="Editorial Magazine Grid"
+              onClick={() => setShowUploadModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-950 bg-gradient-to-r from-[#d4af37] to-[#f3e5ab] hover:brightness-105 active:scale-95 transition-all cursor-pointer shadow-md shrink-0"
+              title="Upload new photo or video to gallery"
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Editorial</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Upload Photo</span>
             </button>
 
-            <button
-              onClick={() => setGalleryViewMode('cinematic')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                galleryViewMode === 'cinematic'
-                  ? 'bg-white/15 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              style={{
-                color: galleryViewMode === 'cinematic' ? config.secondaryColor : undefined,
-              }}
-              title="21:9 Anamorphic Cinema Strip"
-            >
-              <Film className="w-3.5 h-3.5" />
-              <span>21:9 Cinema</span>
-            </button>
+            {/* Layout View Switcher */}
+            <div className="flex items-center gap-1 bg-soft p-1 rounded-xl border border-primary shrink-0">
+              <span className="text-[11px] font-mono text-muted px-2 uppercase hidden sm:inline">
+                View:
+              </span>
 
-            <button
-              onClick={() => setGalleryViewMode('spotlight')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                galleryViewMode === 'spotlight'
-                  ? 'bg-white/15 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              style={{
-                color: galleryViewMode === 'spotlight' ? config.secondaryColor : undefined,
-              }}
-              title="Spotlight Master Walkthrough"
-            >
-              <Tv className="w-3.5 h-3.5" />
-              <span>Spotlight</span>
-            </button>
+              <button
+                onClick={() => setGalleryViewMode('editorial')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  galleryViewMode === 'editorial'
+                    ? 'bg-white/15 text-primary shadow-sm'
+                    : 'text-muted hover:text-primary'
+                }`}
+                style={{
+                  color: galleryViewMode === 'editorial' ? config.secondaryColor : undefined,
+                }}
+                title="Editorial Magazine Grid"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Editorial</span>
+              </button>
+
+              <button
+                onClick={() => setGalleryViewMode('cinematic')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  galleryViewMode === 'cinematic'
+                    ? 'bg-white/15 text-primary shadow-sm'
+                    : 'text-muted hover:text-primary'
+                }`}
+                style={{
+                  color: galleryViewMode === 'cinematic' ? config.secondaryColor : undefined,
+                }}
+                title="21:9 Anamorphic Cinema Strip"
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">21:9 Cinema</span>
+              </button>
+
+              <button
+                onClick={() => setGalleryViewMode('spotlight')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  galleryViewMode === 'spotlight'
+                    ? 'bg-white/15 text-primary shadow-sm'
+                    : 'text-muted hover:text-primary'
+                }`}
+                style={{
+                  color: galleryViewMode === 'spotlight' ? config.secondaryColor : undefined,
+                }}
+                title="Spotlight Master Walkthrough"
+              >
+                <Tv className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Spotlight</span>
+              </button>
+            </div>
           </div>
 
         </div>
 
+        {/* Empty State */}
+        {filteredItems.length === 0 && (
+          <div className="text-center py-20 px-4 rounded-3xl bg-soft border border-primary flex flex-col items-center justify-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-[#d4af37]/15 flex items-center justify-center text-[#d4af37]">
+              <Camera className="w-8 h-8" />
+            </div>
+            <h3 className="font-cinzel text-xl font-bold text-primary">
+              No photos found in {selectedCategory}
+            </h3>
+            <p className="text-xs text-muted max-w-sm">
+              Be the first to upload and showcase visual projects in this category!
+            </p>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-slate-950 bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#c59b27] hover:brightness-105 active:scale-95 transition-all shadow-lg flex items-center gap-2 cursor-pointer"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload Photo to {selectedCategory}</span>
+            </button>
+          </div>
+        )}
+
         {/* ========================================================================= */}
         {/* VIEW MODE 1: EDITORIAL MAGAZINE GRID */}
         {/* ========================================================================= */}
-        {galleryViewMode === 'editorial' && (
+        {galleryViewMode === 'editorial' && filteredItems.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
             {filteredItems.map((item, idx) => {
-              const isVideo = !!item.videoUrl || item.category.includes('Film');
+              const isVideo = !!item.videoUrl || item.category.includes('Film') || item.category.includes('Video');
               return (
                 <div
                   key={item.id}
                   onClick={() => setActiveItemIndex(idx)}
-                  className="group relative rounded-2xl overflow-hidden glass-panel border border-white/10 hover:border-white/30 transition-all duration-500 cursor-pointer shadow-lg flex flex-col"
+                  className="group relative rounded-2xl overflow-hidden glass-panel border border-primary hover:border-[var(--brand-accent)]/30 transition-all duration-500 cursor-pointer shadow-lg flex flex-col"
                   style={{
                     boxShadow: `0 4px 20px rgba(0,0,0,0.4)`,
                   }}
@@ -223,7 +327,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                     {/* Top Category Tag */}
                     <div className="absolute top-3 left-3 flex items-center gap-2">
                       <span
-                        className="text-[11px] font-mono tracking-wider uppercase bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-white/10"
+                        className="text-[11px] font-mono tracking-wider uppercase bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-primary"
                         style={{ color: config.primaryColor }}
                       >
                         {item.category}
@@ -235,9 +339,24 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                       <div
                         className="absolute top-3 right-3 w-8 h-8 rounded-full text-black flex items-center justify-center shadow-lg"
                         style={{ backgroundColor: config.primaryColor }}
+                        title="Watch Video"
                       >
                         <Film className="w-4 h-4" />
                       </div>
+                    )}
+
+                    {/* Admin Delete Action Shortcut */}
+                    {isAdmin && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProject(item.id, item.title);
+                        }}
+                        className="absolute bottom-3 right-3 p-2 rounded-xl bg-black/75 hover:bg-rose-600 text-rose-300 hover:text-white transition-all z-10 shadow-lg cursor-pointer"
+                        title="Delete photo (Admin)"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     )}
 
                     {/* Hover Quick Action Indicator */}
@@ -252,33 +371,37 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                     </div>
 
                     {/* Bottom Title Text Overlay */}
-                    <div className="absolute bottom-3 left-3 right-3">
+                    <div className="absolute bottom-3 left-3 right-12">
                       <h3
-                        className="font-outfit text-lg font-bold text-white transition-colors leading-snug"
+                        className="font-outfit text-lg font-bold text-primary transition-colors leading-snug line-clamp-1"
                         style={{ color: 'white' }}
                       >
                         {item.title}
                       </h3>
-                      <div className="flex items-center gap-2 text-xs text-slate-300 mt-1">
+                      <div className="flex items-center gap-2 text-xs text-secondary mt-1">
                         {item.client && <span>{item.client}</span>}
-                        {item.client && item.year && <span aria-hidden="true">·</span>}
-                        {item.year && <span>{item.year}</span>}
+                        {item.client && (item.date || item.year) && <span aria-hidden="true">·</span>}
+                        {item.date ? (
+                          <span>{new Date(item.date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</span>
+                        ) : item.year ? (
+                          <span>{item.year}</span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
 
                   {/* Subtitle Card Description */}
-                  <div className="p-4 bg-[#0d1017] border-t border-white/5 flex-1 flex flex-col justify-between">
-                    <p className="text-xs text-slate-400 line-clamp-2">
+                  <div className="p-4 bg-[var(--brand-bg)] border-t border-primary flex-1 flex flex-col justify-between">
+                    <p className="text-xs text-muted line-clamp-2">
                       {item.description}
                     </p>
                     
                     <div
-                      className="mt-3 flex items-center justify-between text-[11px] font-mono pt-2 border-t border-white/5"
+                      className="mt-3 flex items-center justify-between text-[11px] font-mono pt-2 border-t border-primary"
                       style={{ color: config.secondaryColor }}
                     >
                       <span>SAI LAB FINISH</span>
-                      <span className="flex items-center gap-1 group-hover:text-white transition-colors">
+                      <span className="flex items-center gap-1 group-hover:text-primary transition-colors">
                         Full Preview <ChevronRight className="w-3 h-3" />
                       </span>
                     </div>
@@ -292,15 +415,15 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
         {/* ========================================================================= */}
         {/* VIEW MODE 2: 21:9 ANAMORPHIC CINEMA STRIP */}
         {/* ========================================================================= */}
-        {galleryViewMode === 'cinematic' && (
+        {galleryViewMode === 'cinematic' && filteredItems.length > 0 && (
           <div className="space-y-6 animate-fade-in">
             {filteredItems.map((item, idx) => {
-              const isVideo = !!item.videoUrl || item.category.includes('Film');
+              const isVideo = !!item.videoUrl || item.category.includes('Film') || item.category.includes('Video');
               return (
                 <div
                   key={item.id}
                   onClick={() => setActiveItemIndex(idx)}
-                  className="group relative rounded-2xl overflow-hidden bg-black border border-white/10 hover:border-white/30 transition-all duration-500 cursor-pointer shadow-2xl"
+                  className="group relative rounded-2xl overflow-hidden bg-black border border-primary hover:border-[var(--brand-accent)]/30 transition-all duration-500 cursor-pointer shadow-2xl"
                   style={{
                     boxShadow: `0 10px 40px rgba(0,0,0,0.6)`,
                   }}
@@ -321,21 +444,34 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
 
                     {/* Camera Overlay HUD */}
                     <div className="absolute top-4 left-5 flex items-center gap-3">
-                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-600/80 text-[10px] font-mono text-white tracking-widest uppercase">
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-600/80 text-[10px] font-mono text-primary tracking-widest uppercase">
                         <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> REC
                       </span>
-                      <span className="text-[11px] font-mono text-slate-300 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-white/10">
+                      <span className="text-[11px] font-mono text-secondary bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-primary">
                         4K DCI · 24.000 FPS · PRORES 422
                       </span>
                     </div>
 
                     <div className="absolute top-4 right-5 flex items-center gap-2">
                       <span
-                        className="text-[11px] font-mono tracking-wider uppercase px-2.5 py-1 rounded bg-black/70 border border-white/10"
+                        className="text-[11px] font-mono tracking-wider uppercase px-2.5 py-1 rounded bg-black/70 border border-primary"
                         style={{ color: config.primaryColor }}
                       >
                         {item.category}
                       </span>
+
+                      {isAdmin && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteProject(item.id, item.title);
+                          }}
+                          className="p-1.5 rounded-lg bg-black/75 hover:bg-rose-600 text-rose-300 hover:text-white transition-all cursor-pointer"
+                          title="Delete photo (Admin)"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
 
                     {/* Center Action Prompt */}
@@ -352,19 +488,19 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                     {/* Bottom Cinematic Typography */}
                     <div className="absolute bottom-5 left-5 right-5 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                       <div className="max-w-2xl">
-                        <h3 className="font-cinzel text-xl sm:text-2xl font-bold text-white tracking-wide">
+                        <h3 className="font-cinzel text-xl sm:text-2xl font-bold text-primary tracking-wide">
                           {item.title}
                         </h3>
-                        <p className="text-xs text-slate-300 mt-1 line-clamp-1">
+                        <p className="text-xs text-secondary mt-1 line-clamp-1">
                           {item.description}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-3 text-xs text-slate-400 font-mono shrink-0">
+                      <div className="flex items-center gap-3 text-xs text-muted font-mono shrink-0">
                         {item.client && <span>{item.client}</span>}
                         {item.year && <span>({item.year})</span>}
                         <span
-                          className="px-2 py-0.5 rounded bg-white/10 text-[11px]"
+                          className="px-2 py-0.5 rounded bg-soft text-[11px]"
                           style={{ color: config.secondaryColor }}
                         >
                           LUT: SAI CINEMA
@@ -385,7 +521,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
           <div className="space-y-6 animate-fade-in">
             
             {/* Giant Featured Master Stage */}
-            <div className="relative rounded-3xl overflow-hidden bg-black border border-white/15 shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden bg-black border border-primary shadow-2xl">
               <div className="relative aspect-[16/9] sm:aspect-[2/1] w-full max-h-[580px] overflow-hidden">
                 <img
                   src={currentSpotlight.imageUrl}
@@ -399,18 +535,28 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                 {/* Top Badge */}
                 <div className="absolute top-6 left-6 flex items-center gap-2">
                   <span
-                    className="px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-black/75 backdrop-blur-md border border-white/15"
+                    className="px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-black/75 backdrop-blur-md border border-primary"
                     style={{ color: config.primaryColor }}
                   >
                     ★ FEATURED MASTERPIECE
                   </span>
-                  <span className="px-2.5 py-1 rounded-full text-xs text-slate-300 bg-white/10">
+                  <span className="px-2.5 py-1 rounded-full text-xs text-secondary bg-soft">
                     {currentSpotlight.category}
                   </span>
                 </div>
 
-                {/* Inspect Button */}
-                <div className="absolute top-6 right-6">
+                {/* Inspect Button & Admin Delete */}
+                <div className="absolute top-6 right-6 flex items-center gap-2">
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDeleteProject(currentSpotlight.id, currentSpotlight.title)}
+                      className="p-2.5 rounded-xl bg-black/70 hover:bg-rose-600 text-rose-300 hover:text-white transition-all cursor-pointer shadow-lg"
+                      title="Delete photo (Admin)"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+
                   <button
                     onClick={() => setActiveItemIndex(spotlightIndex)}
                     className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-950 bg-white hover:bg-slate-200 transition-all flex items-center gap-2 cursor-pointer shadow-lg"
@@ -423,13 +569,13 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                 {/* Bottom Story & Metadata */}
                 <div className="absolute bottom-6 left-6 right-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
                   <div className="max-w-2xl">
-                    <h3 className="font-cinzel text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+                    <h3 className="font-cinzel text-2xl sm:text-4xl font-extrabold text-primary tracking-tight">
                       {currentSpotlight.title}
                     </h3>
-                    <p className="text-sm text-slate-300 mt-2 max-w-xl leading-relaxed">
+                    <p className="text-sm text-secondary mt-2 max-w-xl leading-relaxed">
                       {currentSpotlight.description}
                     </p>
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mt-3 font-mono">
+                    <div className="flex items-center gap-3 text-xs text-muted mt-3 font-mono">
                       {currentSpotlight.client && <span>Client: {currentSpotlight.client}</span>}
                       {currentSpotlight.year && <span>Year: {currentSpotlight.year}</span>}
                     </div>
@@ -455,7 +601,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
 
             {/* Horizontal Filmstrip Navigation Strip */}
             <div className="space-y-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-slate-400 px-1">
+              <span className="text-xs font-mono uppercase tracking-wider text-muted px-1">
                 Select from {filteredItems.length} Masterpiece Reel Tracks:
               </span>
 
@@ -469,7 +615,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                       className={`relative w-44 h-24 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer group text-left ${
                         isCurrent
                           ? 'border-white scale-105 shadow-2xl'
-                          : 'border-white/10 opacity-60 hover:opacity-100 hover:border-white/30'
+                          : 'border-primary opacity-60 hover:opacity-100 hover:border-white/30'
                       }`}
                       style={{
                         borderColor: isCurrent ? config.primaryColor : undefined,
@@ -483,7 +629,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                       <div className="absolute bottom-1.5 left-2 right-2">
-                        <p className="text-[11px] font-bold text-white truncate">
+                        <p className="text-[11px] font-bold text-primary truncate">
                           {item.title}
                         </p>
                       </div>
@@ -508,23 +654,36 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
             <div className="flex items-center gap-3">
               <span
-                className="text-xs font-mono bg-black/60 px-3 py-1.5 rounded-lg border border-white/10"
+                className="text-xs font-mono bg-black/60 px-3 py-1.5 rounded-lg border border-primary"
                 style={{ color: config.primaryColor }}
               >
                 {activeItem.category}
               </span>
-              <span className="text-sm font-semibold text-white hidden sm:inline">
+              <span className="text-sm font-semibold text-primary hidden sm:inline truncate max-w-md">
                 {activeItem.title}
               </span>
             </div>
 
-            <button
-              onClick={() => setActiveItemIndex(null)}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-              aria-label="Close fullscreen preview"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <button
+                  onClick={() => handleDeleteProject(activeItem.id, activeItem.title)}
+                  className="px-3 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                  title="Delete from Gallery"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Delete</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => setActiveItemIndex(null)}
+                className="p-2.5 rounded-xl bg-soft hover:bg-white/20 text-primary transition-colors cursor-pointer"
+                aria-label="Close fullscreen preview"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
           </div>
 
           {/* Left Arrow */}
@@ -534,7 +693,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                 prev !== null && prev > 0 ? prev - 1 : filteredItems.length - 1
               )
             }
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/15 transition-colors cursor-pointer"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/60 hover:bg-black/90 text-primary border border-primary transition-colors cursor-pointer"
             aria-label="Previous image"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -547,7 +706,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
                 prev !== null && prev < filteredItems.length - 1 ? prev + 1 : 0
               )
             }
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/15 transition-colors cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/60 hover:bg-black/90 text-primary border border-primary transition-colors cursor-pointer"
             aria-label="Next image"
           >
             <ChevronRight className="w-6 h-6" />
@@ -558,7 +717,7 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
             
             {/* Media Area */}
             <div
-              className="relative w-full max-h-[62vh] rounded-2xl overflow-hidden flex items-center justify-center bg-[#07080c] border shadow-2xl"
+              className="relative w-full max-h-[62vh] rounded-2xl overflow-hidden flex items-center justify-center bg-[var(--brand-bg)] border shadow-2xl"
               style={{ borderColor: `${config.primaryColor}55` }}
             >
               {activeItem.videoUrl ? (
@@ -594,19 +753,20 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
 
             {/* Bottom Project Metadata Bar */}
             <div
-              className="w-full mt-4 p-5 rounded-2xl bg-[#0e1118]/90 backdrop-blur-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+              className="w-full mt-4 p-5 rounded-2xl bg-[var(--brand-bg)]/90 backdrop-blur-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
               style={{ borderColor: `${config.primaryColor}55` }}
             >
               <div>
-                <h4 className="font-cinzel text-xl font-bold text-white">
+                <h4 className="font-cinzel text-xl font-bold text-primary">
                   {activeItem.title}
                 </h4>
-                <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                <p className="text-xs text-secondary mt-1 max-w-xl">
                   {activeItem.description}
                 </p>
-                <div className="flex items-center gap-3 text-xs text-slate-400 mt-2 font-mono">
+                <div className="flex items-center gap-3 text-xs text-muted mt-2 font-mono">
                   {activeItem.client && <span>Client: {activeItem.client}</span>}
                   {activeItem.year && <span>Year: {activeItem.year}</span>}
+                  {activeItem.date && <span>Date: {new Date(activeItem.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
                   <span style={{ color: config.primaryColor }}>Graded: DaVinci Resolve Studio & ACR</span>
                 </div>
               </div>
@@ -632,6 +792,14 @@ export const PortfolioGallery: React.FC<PortfolioGalleryProps> = ({
 
         </div>
       )}
+
+      {/* Gallery Upload Modal */}
+      <GalleryUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onSuccess={handleUploadSuccess}
+        onOpenAdminLogin={onOpenAdmin}
+      />
     </section>
   );
 };

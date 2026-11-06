@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type AestheticTheme = 'gold' | 'sapphire' | 'kodak' | 'emerald';
 export type GalleryViewMode = 'editorial' | 'cinematic' | 'spotlight';
+export type ThemeMode = 'light' | 'dark';
 
 export interface AestheticThemeConfig {
   id: AestheticTheme;
@@ -70,6 +71,8 @@ export const AESTHETIC_THEMES: Record<AestheticTheme, AestheticThemeConfig> = {
 interface AestheticContextType {
   theme: AestheticTheme;
   setTheme: (theme: AestheticTheme) => void;
+  mode: ThemeMode;
+  setMode: (mode: ThemeMode) => void;
   config: AestheticThemeConfig;
   filmGrain: boolean;
   setFilmGrain: (val: boolean) => void;
@@ -83,6 +86,11 @@ export const AestheticProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [theme, setThemeState] = useState<AestheticTheme>(() => {
     const saved = localStorage.getItem('sg_aesthetic_theme');
     return (saved as AestheticTheme) || 'gold';
+  });
+
+  const [mode, setModeState] = useState<ThemeMode>(() => {
+    const saved = localStorage.getItem('sg_theme_mode');
+    return (saved as ThemeMode) || 'dark';
   });
 
   const [filmGrain, setFilmGrainState] = useState<boolean>(() => {
@@ -99,6 +107,11 @@ export const AestheticProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     localStorage.setItem('sg_aesthetic_theme', newTheme);
   };
 
+  const setMode = (newMode: ThemeMode) => {
+    setModeState(newMode);
+    localStorage.setItem('sg_theme_mode', newMode);
+  };
+
   const setFilmGrain = (val: boolean) => {
     setFilmGrainState(val);
     localStorage.setItem('sg_film_grain', val ? 'true' : 'false');
@@ -110,10 +123,19 @@ export const AestheticProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   useEffect(() => {
-    // Sync class list on document body
+    // Sync theme class
     document.body.classList.remove('theme-gold', 'theme-sapphire', 'theme-kodak', 'theme-emerald');
     document.body.classList.add(`theme-${theme}`);
-  }, [theme]);
+    
+    // Sync mode class
+    if (mode === 'light') {
+      document.body.classList.add('mode-light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.body.classList.remove('mode-light');
+      document.documentElement.classList.add('dark');
+    }
+  }, [theme, mode]);
 
   const config = AESTHETIC_THEMES[theme];
 
@@ -122,6 +144,8 @@ export const AestheticProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       value={{
         theme,
         setTheme,
+        mode,
+        setMode,
         config,
         filmGrain,
         setFilmGrain,

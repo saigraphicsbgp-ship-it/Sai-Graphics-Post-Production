@@ -14,7 +14,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
   const [activeVisualTab, setActiveVisualTab] = useState<'drone' | 'suite' | 'identity'>('drone');
 
   return (
-    <section id="about" className="relative py-24 bg-[#090b10] border-t border-white/5 overflow-hidden">
+    <section id="about" className="relative py-24 bg-[var(--brand-bg)] border-t border-secondary overflow-hidden">
       {/* Background ambient accents */}
       <div className="absolute top-1/4 right-0 w-[30rem] h-[30rem] bg-[#d4af37]/5 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-[24rem] h-[24rem] bg-[#38bdf8]/5 rounded-full blur-[120px] pointer-events-none" />
@@ -23,14 +23,14 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-[#d4af37]/30">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft border border-[#d4af37]/30">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f3e5ab]">
               Studio Heritage & Philosophy
             </span>
           </div>
 
-          <h2 className="font-cinzel text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="font-cinzel text-4xl sm:text-5xl font-extrabold text-primary tracking-tight">
             ABOUT <span className="text-gold-gradient">SAI GRAPHICS</span>
           </h2>
           <p className="text-sm font-outfit uppercase tracking-[0.2em] text-[#38bdf8]">
@@ -42,7 +42,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
         <div className="max-w-4xl mx-auto mb-16">
           <div className="relative p-8 sm:p-10 rounded-2xl glass-panel-gold border border-[#d4af37]/35 shadow-2xl overflow-hidden">
             <div className="flex justify-center mb-6">
-              <div className="relative w-24 h-24 rounded-2xl bg-[#0a0c12] border border-[#d4af37]/50 p-1 shadow-2xl flex items-center justify-center overflow-hidden">
+              <div className="relative w-24 h-24 rounded-2xl bg-[var(--brand-bg)] border border-[#d4af37]/50 p-1 shadow-2xl flex items-center justify-center overflow-hidden">
                 <img
                   src="/assets/aistudio/SAI_46ad54be.png"
                   alt="Sai Graphics Photography Official Logo"
@@ -51,7 +51,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
             </div>
 
-            <p className="font-serif italic text-xl sm:text-2xl lg:text-3xl text-white text-center leading-relaxed">
+            <p className="font-serif italic text-xl sm:text-2xl lg:text-3xl text-primary text-center leading-relaxed">
               "{settings.aboutDescription}"
             </p>
 
@@ -79,7 +79,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                     activeVisualTab === 'drone'
                       ? 'bg-[#d4af37] text-slate-950 shadow-md shadow-[#d4af37]/20'
-                      : 'bg-white/[0.04] text-slate-400 hover:text-white border border-white/5'
+                      : 'bg-soft text-muted hover:text-primary border border-secondary'
                   }`}
                 >
                   <Camera className="w-3.5 h-3.5" />
@@ -91,7 +91,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                     activeVisualTab === 'identity'
                       ? 'bg-gradient-to-r from-[#d4af37] to-[#f3e5ab] text-slate-950 shadow-md shadow-[#d4af37]/30 font-bold'
-                      : 'bg-white/[0.04] text-slate-400 hover:text-white border border-white/5'
+                      : 'bg-soft text-muted hover:text-primary border border-secondary'
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -103,7 +103,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                     activeVisualTab === 'suite'
                       ? 'bg-[#38bdf8] text-slate-950 shadow-md shadow-[#38bdf8]/20'
-                      : 'bg-white/[0.04] text-slate-400 hover:text-white border border-white/5'
+                      : 'bg-soft text-muted hover:text-primary border border-secondary'
                   }`}
                 >
                   <Monitor className="w-3.5 h-3.5" />
@@ -113,10 +113,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
               <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-950">
                 {activeVisualTab === 'identity' ? (
-                  <div className="relative w-full h-full bg-[#07080c] flex items-center justify-center p-6 overflow-hidden">
+                  <div className="relative w-full h-full bg-[var(--brand-bg)] flex items-center justify-center p-6 overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.18)_0%,transparent_70%)]" />
                     <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                      <div className="relative w-32 h-32 rounded-2xl bg-[#0a0c12]/90 border border-[#d4af37]/50 p-2 shadow-2xl backdrop-blur-md mb-3 flex items-center justify-center">
+                      <div className="relative w-32 h-32 rounded-2xl bg-[var(--brand-bg)]/90 border border-[#d4af37]/50 p-2 shadow-2xl backdrop-blur-md mb-3 flex items-center justify-center">
                         <img
                           src="/assets/aistudio/SAI_46ad54be.png"
                           alt="Sai Graphics Official Identity Monogram"
@@ -126,7 +126,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                       <div className="text-xs font-mono uppercase tracking-[0.25em] text-[#d4af37] font-bold">
                         SAI GRAPHICS · POST PRODUCTION &amp; EDITING LAB
                       </div>
-                      <p className="text-sm font-serif italic text-slate-300 mt-1 max-w-sm">
+                      <p className="text-sm font-serif italic text-secondary mt-1 max-w-sm">
                         "Transforming Moments Into Masterpieces."
                       </p>
                     </div>
@@ -148,7 +148,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                         <Video className="w-3.5 h-3.5" />
                         <span>SAI GRAPHICS PRODUCTION · 360° AERIAL FLEET</span>
                       </div>
-                      <h4 className="text-base font-bold text-white">
+                      <h4 className="text-base font-bold text-primary">
                         Panoramic Aerial Cinematography Across Bihar
                       </h4>
                     </div>
@@ -168,7 +168,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                         <Monitor className="w-3.5 h-3.5" />
                         <span>CALIBRATED WORKSTATION SUITE</span>
                       </div>
-                      <h4 className="text-base font-bold text-white">
+                      <h4 className="text-base font-bold text-primary">
                         Where Raw Footage Meets High-Precision Artistry
                       </h4>
                     </div>
@@ -179,61 +179,61 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
             {/* Studio Pillars Grid */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl glass-panel border border-white/5 space-y-1">
+              <div className="p-4 rounded-xl glass-panel border border-secondary space-y-1">
                 <div className="w-8 h-8 rounded-lg bg-[#d4af37]/15 flex items-center justify-center mb-2">
                   <Award className="w-4 h-4 text-[#d4af37]" />
                 </div>
-                <h5 className="font-outfit font-bold text-sm text-white">Master Artistry</h5>
-                <p className="text-xs text-slate-400">10+ years polishing wedding cinema & fashion catalogs.</p>
+                <h5 className="font-outfit font-bold text-sm text-primary">Master Artistry</h5>
+                <p className="text-xs text-muted">10+ years polishing wedding cinema & fashion catalogs.</p>
               </div>
 
-              <div className="p-4 rounded-xl glass-panel border border-white/5 space-y-1">
+              <div className="p-4 rounded-xl glass-panel border border-secondary space-y-1">
                 <div className="w-8 h-8 rounded-lg bg-[#38bdf8]/15 flex items-center justify-center mb-2">
                   <Cpu className="w-4 h-4 text-[#38bdf8]" />
                 </div>
-                <h5 className="font-outfit font-bold text-sm text-white">8K Render Farm</h5>
-                <p className="text-xs text-slate-400">High-throughput GPU nodes for lightning turnaround.</p>
+                <h5 className="font-outfit font-bold text-sm text-primary">8K Render Farm</h5>
+                <p className="text-xs text-muted">High-throughput GPU nodes for lightning turnaround.</p>
               </div>
             </div>
           </div>
 
           {/* Right Column: Studio Capabilities & Standards */}
           <div className="lg:col-span-6 space-y-6">
-            <h3 className="font-cinzel text-2xl sm:text-3xl font-bold text-white">
+            <h3 className="font-cinzel text-2xl sm:text-3xl font-bold text-primary">
               The Art of Visual Finishing
             </h3>
 
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+            <p className="text-secondary text-sm sm:text-base leading-relaxed">
               At Sai Graphics, post-production is not merely cutting clips or running auto-presets. It is an exacting craft where every frame receives meticulous color balance, shadow recovery, and emotional resonance.
             </p>
 
             {/* Checklist of Lab Standards */}
             <div className="space-y-3 pt-2">
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-muted border border-secondary">
                 <CheckCircle className="w-5 h-5 text-[#d4af37] shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-sm font-semibold text-white">Color-Accurate Master Grading</h5>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <h5 className="text-sm font-semibold text-primary">Color-Accurate Master Grading</h5>
+                  <p className="text-xs text-muted mt-0.5">
                     Calibrated D65 white point monitors ensuring colors look identical on smartphones, televisions, and cinema screens.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-muted border border-secondary">
                 <CheckCircle className="w-5 h-5 text-[#38bdf8] shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-sm font-semibold text-white">Preserving Real Emotion in Indian Weddings</h5>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <h5 className="text-sm font-semibold text-primary">Preserving Real Emotion in Indian Weddings</h5>
+                  <p className="text-xs text-muted mt-0.5">
                     Deep expertise honoring traditional rituals like Jaimala, Kanyadaan, and Sangeet with rich reds, golds, and authentic skin complexions.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-muted border border-secondary">
                 <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-sm font-semibold text-white">Heirloom Quality Wedding Albums</h5>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <h5 className="text-sm font-semibold text-primary">Heirloom Quality Wedding Albums</h5>
+                  <p className="text-xs text-muted mt-0.5">
                     Custom lay-flat photobook layouts printed on archival non-tear, velvet-touch materials built to last generations.
                   </p>
                 </div>
@@ -241,8 +241,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
             </div>
 
             {/* Location & Action */}
-            <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-white/10">
-              <div className="flex items-center gap-2 text-xs text-slate-300">
+            <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-primary">
+              <div className="flex items-center gap-2 text-xs text-secondary">
                 <MapPin className="w-4 h-4 text-[#d4af37]" />
                 <span>Sah Market, Picture Place, Bhagalpur</span>
               </div>

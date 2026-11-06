@@ -14,7 +14,10 @@
   "dependencies": {
     "@firebase/app": "^0.16.4",
     "@firebase/auth": "^1.13.8",
+    "@firebase/eslint-plugin-security-rules": "^0.0.2",
     "express": "^4.21.2",
+    "firebase": "^13.2.0",
+    "firebase-admin": "^13.0.0",
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1"

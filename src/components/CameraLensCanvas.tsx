@@ -3,17 +3,21 @@ import { useAesthetic } from '../context/AestheticContext';
 
 interface CameraLensCanvasProps {
   className?: string;
+  brandName?: string;
 }
 
-export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ className = '' }) => {
+export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ 
+  className = '',
+  brandName = 'SAI GRAPHICS'
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { theme, config } = useAesthetic();
+  const { theme, config, mode } = useAesthetic();
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let animationFrameId: number;
@@ -53,14 +57,15 @@ export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ className = 
 
     let rotationAngle = 0;
     let apertureBladeAngle = 0;
+    let nameFloatOffset = 0;
 
     const render = () => {
       // Smooth mouse interpolation for 3D parallax tilt
       mouseX += (targetMouseX - mouseX) * 0.04;
       mouseY += (targetMouseY - mouseY) * 0.04;
 
-      const tiltX = (mouseX / width - 0.5) * 45;
-      const tiltY = (mouseY / height - 0.5) * 35;
+      const tiltX = (mouseX / width - 0.5) * 50;
+      const tiltY = (mouseY / height - 0.5) * 40;
 
       ctx.clearRect(0, 0, width, height);
 
@@ -82,12 +87,47 @@ export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ className = 
 
       // Camera Lens Center Position (Right-leaning for split hero, responsive)
       const isMobile = width < 768;
-      const lensCenterX = isMobile ? width * 0.5 : width * 0.72 + tiltX;
-      const lensCenterY = isMobile ? height * 0.65 : height * 0.48 + tiltY;
-      const baseRadius = isMobile ? Math.min(width, height) * 0.38 : Math.min(width, height) * 0.42;
+      const lensCenterX = isMobile ? width * 0.5 + (tiltX * 0.5) : width * 0.72 + tiltX;
+      const lensCenterY = isMobile ? height * 0.65 + (tiltY * 0.5) : height * 0.48 + tiltY;
+      const baseRadius = isMobile ? Math.min(width, height) * 0.35 : Math.min(width, height) * 0.42;
 
       rotationAngle += 0.0025;
       apertureBladeAngle = Math.sin(rotationAngle * 1.5) * 0.12;
+      nameFloatOffset = Math.sin(rotationAngle * 10) * 8;
+
+      // --- BRAND NAME FLOATING BEHIND LENS ---
+      if (!isMobile) {
+        ctx.save();
+        // The name moves in the opposite direction of tilt to create "parallax depth"
+        const nameX = lensCenterX - tiltX * 1.5;
+        const nameY = lensCenterY - tiltY * 1.5 + nameFloatOffset;
+        
+        ctx.translate(nameX, nameY);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // 1. Shadow/Glow under the name
+        ctx.font = '900 120px "Cinzel", serif';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.03)';
+        ctx.fillText(brandName, 0, 0);
+
+        // 2. Main Name Rendering
+        ctx.font = '700 80px "Cinzel", serif';
+        const nameGrad = ctx.createLinearGradient(-300, 0, 300, 0);
+        const nameColor = mode === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+        const accentColor = mode === 'light' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(212, 175, 55, 0.12)';
+        nameGrad.addColorStop(0, nameColor);
+        nameGrad.addColorStop(0.5, accentColor);
+        nameGrad.addColorStop(1, nameColor);
+        ctx.fillStyle = nameGrad;
+        ctx.fillText(brandName, 0, 0);
+
+        // 3. Subtle stroke for definition
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.08)';
+        ctx.lineWidth = 1;
+        ctx.strokeText(brandName, 0, 0);
+        ctx.restore();
+      }
 
       ctx.save();
       ctx.translate(lensCenterX, lensCenterY);
@@ -96,7 +136,7 @@ export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ className = 
       const ambientGlow = ctx.createRadialGradient(0, 0, baseRadius * 0.3, 0, 0, baseRadius * 1.6);
       ambientGlow.addColorStop(0, 'rgba(56, 189, 248, 0.08)');
       ambientGlow.addColorStop(0.5, 'rgba(212, 175, 55, 0.06)');
-      ambientGlow.addColorStop(1, 'rgba(8, 9, 13, 0)');
+      ambientGlow.addColorStop(1, mode === 'light' ? 'rgba(248, 250, 252, 0)' : 'rgba(8, 9, 13, 0)');
       ctx.fillStyle = ambientGlow;
       ctx.beginPath();
       ctx.arc(0, 0, baseRadius * 1.6, 0, Math.PI * 2);
@@ -105,7 +145,7 @@ export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ className = 
       // 2. Outer Anodized Aluminum Barrel Ring
       ctx.beginPath();
       ctx.arc(0, 0, baseRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.strokeStyle = mode === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.08)';
       ctx.lineWidth = 14;
       ctx.stroke();
 
@@ -140,8 +180,8 @@ export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ className = 
       const textRadius = baseRadius * 0.86;
 
       const specs = [
-        'SAI GRAPHICS CINEMA LAB',
-        '85mm F/1.2 MASTER ED',
+        `MASTER ${brandName} OPTICS`,
+        '85mm F/1.2 CINEMA ED',
         'MULTI-COATED GLASS',
         'BHAGALPUR STUDIO'
       ];
@@ -236,7 +276,7 @@ export const CameraLensCanvas: React.FC<CameraLensCanvasProps> = ({ className = 
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
     };
-  }, [theme, config.lensGradient]);
+  }, [theme, config.lensGradient, brandName, mode]);
 
   return (
     <canvas

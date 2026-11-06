@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ---------------------------------------------------------
+    // 1. Global Safety Net
+    // ---------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ---------------------------------------------------------
+    // 2. Global Helpers
+    // ---------------------------------------------------------
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return request.auth.token.email_verified == true; }
+    function isAdmin() { 
+      return isSignedIn() && isVerified() && request.auth.token.email == 'saigraphicsbgp@gmail.com';
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // ---------------------------------------------------------
+    // 3. Entity Validations
+    // ---------------------------------------------------------
+    function isValidSettings(data) {
+      return data.keys().hasAll(['brandName', 'businessType', 'tagline', 'aboutDescription', 'mobileNumber', 'whatsappNumber', 'email', 'address'])
+        && data.brandName is string && data.brandName.size() <= 100
+        && data.email is string && data.email.size() <= 100;
+    }
+
+    function isValidService(data) {
+      return data.keys().hasAll(['id', 'number', 'title', 'category', 'shortDesc', 'fullDesc', 'icon', 'imageUrl', 'featured', 'turnaround'])
+        && data.id is string && data.title is string && data.title.size() <= 100;
+    }
+
+    function isValidPortfolio(data) {
+      return data.keys().hasAll(['id', 'title', 'category', 'description', 'imageUrl'])
+        && data.id is string && data.title is string && data.title.size() <= 200;
+    }
+
+    function isValidEnquiry(data) {
+      return data.keys().hasAll(['id', 'createdAt', 'name', 'phone', 'service', 'status'])
+        && data.id is string && data.name is string && data.name.size() <= 100
+        && data.phone is string && data.phone.size() <= 20
+        && data.status in ['New', 'Contacted', 'In Progress', 'Completed'];
+    }
+
+    function isValidNewsletter(data) {
+      return data.keys().hasAll(['id', 'email', 'subscribedAt', 'status'])
+        && data.id is string && data.email is string && data.email.size() <= 100
+        && data.status in ['Active', 'Unsubscribed'];
+    }
+
+    function isValidTestimonial(data) {
+      return data.keys().hasAll(['id', 'name', 'quote', 'rating'])
+        && data.id is string && data.name is string && data.name.size() <= 100
+        && data.rating is number && data.rating >= 1 && data.rating <= 5;
+    }
+
+    // ---------------------------------------------------------
+    // 4. Collection Matches
+    // ---------------------------------------------------------
+
+    // Global Settings
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidSettings(incoming());
+    }
+
+    // Services
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidService(incoming());
+    }
+
+    // Portfolio
+    match /portfolio/{portfolioId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidPortfolio(incoming());
+    }
+
+    // Before/After
+    match /beforeAfter/{demoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Enquiries
+    match /enquiries/{enquiryId} {
+      allow read: if isAdmin();
+      allow create: if isValidEnquiry(incoming()) && incoming().status == 'New';
+      allow update, delete: if isAdmin();
+    }
+
+    // Newsletter
+    match /newsletter/{subscriberId} {
+      allow read: if isAdmin();
+      allow create: if isValidNewsletter(incoming()) && incoming().status == 'Active';
+      allow update, delete: if isAdmin();
+    }
+
+    // Testimonials
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow create: if isValidTestimonial(incoming());
+      allow update, delete: if isAdmin();
+    }
+  }
+}

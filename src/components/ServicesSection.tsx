@@ -83,7 +83,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
   });
 
   return (
-    <section id="services" className="relative py-24 bg-[#0a0c12] border-t border-white/5 overflow-hidden">
+    <section id="services" className="relative py-24 bg-[var(--brand-bg)] border-t border-secondary overflow-hidden">
       {/* Ambient background glows */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-[#d4af37]/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 right-0 w-96 h-96 bg-[#38bdf8]/5 rounded-full blur-[120px] pointer-events-none" />
@@ -92,18 +92,18 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-[#d4af37]/30">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-[#d4af37]/30">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f3e5ab]">
               Creative Post Production Suite
             </span>
           </div>
 
-          <h2 className="font-cinzel text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="font-cinzel text-4xl sm:text-5xl font-extrabold text-primary tracking-tight">
             OUR <span className="text-gold-gradient">SERVICES</span>
           </h2>
 
-          <p className="text-slate-300 text-base sm:text-lg leading-relaxed" style={{ textWrap: 'balance' }}>
+          <p className="text-secondary text-base sm:text-lg leading-relaxed" style={{ textWrap: 'balance' }}>
             Comprehensive post-production excellence tailored for photographers, cinematographers, wedding couples, and creative enterprises across Bihar and beyond.
           </p>
 
@@ -116,7 +116,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                 className={`px-4 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   selectedCategory === cat
                     ? 'bg-gradient-to-r from-[#d4af37] to-[#c59b27] text-slate-950 font-semibold shadow-md shadow-[#d4af37]/20'
-                    : 'bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/10'
+                    : 'bg-soft text-secondary hover:text-primary hover:bg-soft border border-primary'
                 }`}
               >
                 {cat}
@@ -146,7 +146,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
 
                   {/* Clean unboxed number & Icon in top zone */}
                   <div className="absolute top-3 left-3 flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-[#0d1017]/85 backdrop-blur-md border border-white/15 flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-lg bg-[var(--brand-bg)]/85 backdrop-blur-md border border-primary flex items-center justify-center">
                       {renderIcon(service.icon)}
                     </div>
                   </div>
@@ -158,27 +158,27 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   </div>
 
                   {/* Turnaround Badge */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[11px] font-mono text-slate-300 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-md border border-white/10">
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[11px] font-mono text-secondary bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-md border border-primary">
                     <Clock className="w-3 h-3 text-[#38bdf8]" />
                     <span>{service.turnaround}</span>
                   </div>
                 </div>
 
                 {/* Title & Prose */}
-                <h3 className="font-outfit text-xl font-bold text-white group-hover:text-[#f3e5ab] transition-colors leading-snug">
+                <h3 className="font-outfit text-xl font-bold text-primary group-hover:text-[#f3e5ab] transition-colors leading-snug">
                   {service.title}
                 </h3>
 
-                <p className="text-slate-300 text-sm mt-2 leading-relaxed">
+                <p className="text-secondary text-sm mt-2 leading-relaxed">
                   {service.shortDesc}
                 </p>
               </div>
 
               {/* Bottom Actions */}
-              <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between gap-3">
+              <div className="pt-6 mt-6 border-t border-primary flex items-center justify-between gap-3">
                 <button
                   onClick={() => setActiveModalService(service)}
-                  className="text-xs font-semibold text-[#38bdf8] hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="text-xs font-semibold text-[#38bdf8] hover:text-primary flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <span>View Details</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -200,12 +200,12 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
       {/* Service Detail Modal */}
       {activeModalService && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-2xl bg-[#0f121a] border border-[#d4af37]/40 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-[var(--brand-bg)] border border-[#d4af37]/40 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
             
             {/* Close button */}
             <button
               onClick={() => setActiveModalService(null)}
-              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+              className="absolute top-5 right-5 p-2 text-muted hover:text-primary rounded-lg hover:bg-soft transition-colors"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -221,7 +221,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   <span className="text-xs font-mono text-[#38bdf8] uppercase tracking-wider">
                     Service {activeModalService.number} · {activeModalService.category}
                   </span>
-                  <h3 className="font-cinzel text-2xl font-bold text-white mt-0.5">
+                  <h3 className="font-cinzel text-2xl font-bold text-primary mt-0.5">
                     {activeModalService.title}
                   </h3>
                 </div>
@@ -242,25 +242,25 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                 <h4 className="text-sm font-semibold uppercase tracking-wider text-[#d4af37]">
                   Studio Workflow & Finishing Details
                 </h4>
-                <p className="text-slate-300 text-sm leading-relaxed">
+                <p className="text-secondary text-sm leading-relaxed">
                   {activeModalService.fullDesc}
                 </p>
               </div>
 
               {/* Specs & Timeline Grid */}
-              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/5">
+              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted border border-secondary">
                 <div>
-                  <span className="text-xs text-slate-400">Typical Turnaround</span>
-                  <p className="text-sm font-semibold text-white mt-0.5">{activeModalService.turnaround}</p>
+                  <span className="text-xs text-muted">Typical Turnaround</span>
+                  <p className="text-sm font-semibold text-primary mt-0.5">{activeModalService.turnaround}</p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400">Mastered Lab Tools</span>
+                  <span className="text-xs text-muted">Mastered Lab Tools</span>
                   <p className="text-sm font-semibold text-[#38bdf8] mt-0.5">FCP (Final Cut Pro) / DaVinci Resolve / Photoshop CC</p>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-white/10">
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-primary">
                 <button
                   onClick={() => {
                     const title = activeModalService.title;
@@ -278,7 +278,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto py-3 px-5 rounded-xl font-semibold text-sm text-white bg-emerald-600 hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto py-3 px-5 rounded-xl font-semibold text-sm text-primary bg-emerald-600 hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>Chat on WhatsApp</span>

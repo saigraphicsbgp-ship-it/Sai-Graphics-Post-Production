@@ -37,6 +37,7 @@ export interface PortfolioItem {
   videoUrl?: string;
   client?: string;
   year?: string;
+  date?: string;
   featured?: boolean;
 }
 
@@ -83,4 +84,13 @@ export interface TestimonialItem {
   turnaround?: string;
   verified?: boolean;
 }
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  subscribedAt: string;
+  source?: string;
+  status?: 'Active' | 'Unsubscribed';
+}
+
 

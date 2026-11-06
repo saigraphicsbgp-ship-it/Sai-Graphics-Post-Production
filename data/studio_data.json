@@ -287,5 +287,86 @@
       "message": "We have shot a 15-minute short film on Blackmagic 6K RAW. Need professional color grading in DaVinci Resolve.",
       "status": "Contacted"
     }
+  ],
+  "subscribers": [],
+  "testimonials": [
+    {
+      "id": "rev-1",
+      "name": "Rajiv & Priya Sharma",
+      "location": "Sah Market, Bhagalpur",
+      "role": "Wedding Couple",
+      "serviceUsed": "4K Cinematic Wedding Film & Teaser",
+      "rating": 5,
+      "quote": "Sai Graphics turned our wedding footage into pure Bollywood-grade cinema! The color grade on our Haldi ceremony brought out the golden marigold tones so beautifully without blowing out our skin tones. Our relatives couldn't stop replaying the 4-minute teaser. Unbelievable turnaround in just 4 days!",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
+      "turnaround": "Delivered in 4 Days",
+      "date": "October 2026",
+      "verified": true
+    },
+    {
+      "id": "rev-2",
+      "name": "Vikramaditya Roy",
+      "location": "Kolkata & Patna",
+      "role": "Senior Wedding Cinematographer",
+      "serviceUsed": "Multi-Cam Video Post-Production & Color Grading",
+      "rating": 5,
+      "quote": "As a traveling photographer covering luxury destination weddings across Bihar and Bengal, I outsource all my RAW FCP and DaVinci post-production exclusively to Sai Graphics. Their timeline speed, seamless multi-cam audio synchronization, and tone curves are superior to any studio in Eastern India.",
+      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80",
+      "turnaround": "B2B Studio Partner",
+      "date": "September 2026",
+      "verified": true
+    },
+    {
+      "id": "rev-3",
+      "name": "Ananya & Manish Verma",
+      "location": "Patna, Bihar",
+      "role": "Newlywed Couple",
+      "serviceUsed": "Luxury Lay-Flat Wedding Album Designing",
+      "rating": 5,
+      "quote": "The 12x36 metallic photobook designed by Sai Graphics is a true heirloom masterpiece. The velvet texture, emboss finish, and narrative storytelling from the Jaimala to Bidaai made my parents cry happy tears. Highly recommend their Sah Market studio for any couple!",
+      "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80",
+      "turnaround": "Delivered in 3 Days",
+      "date": "August 2026",
+      "verified": true
+    },
+    {
+      "id": "rev-4",
+      "name": "Amit & Shweta Singh",
+      "location": "Bhagalpur, Bihar",
+      "role": "Pre-Wedding Couple",
+      "serviceUsed": "DJI 360° Drone Aerial Cinematography",
+      "rating": 5,
+      "quote": "The 360° drone shots taken over the Vikramshila Setu and Ganges riverbanks looked like a grand international film production! Their drone pilot and post-grading editor worked magic with the sunset golden hour tones. Best editing studio in Bhagalpur hands down.",
+      "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80",
+      "turnaround": "Delivered in 48 Hours",
+      "date": "September 2026",
+      "verified": true
+    },
+    {
+      "id": "rev-5",
+      "name": "Rakesh Kumar",
+      "location": "Sah Market, Bhagalpur",
+      "role": "Commercial Studio Owner (LensCraft)",
+      "serviceUsed": "Batch RAW Retouching & Color Lab Finishing",
+      "rating": 5,
+      "quote": "During peak wedding seasons, our studio gets 10,000+ RAW captures. Sai Graphics handles all frequency separation, clothing wrinkle correction, and album exports with surgical accuracy. Never missed a delivery deadline in 3 years of collaboration.",
+      "avatarUrl": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=250&q=80",
+      "turnaround": "Ongoing Enterprise Partner",
+      "date": "October 2026",
+      "verified": true
+    },
+    {
+      "id": "rev-6",
+      "name": "Dr. Sneha & Kunal Sen",
+      "location": "Kahalgaon, Bihar",
+      "role": "Wedding Couple",
+      "serviceUsed": "Traditional Wedding Film & Instagram Reels",
+      "rating": 5,
+      "quote": "They understood the cultural significance of every small Maithil ritual and edited the background flute score with pinpoint emotional timing. The Instagram reels they crafted went viral in our family circles. Truly passionate artists!",
+      "avatarUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=250&q=80",
+      "turnaround": "Delivered in 5 Days",
+      "date": "July 2026",
+      "verified": true
+    }
   ]
 }

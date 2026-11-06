@@ -40,7 +40,7 @@ export const SGLogo: React.FC<SGLogoProps> = ({
         <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#d4af37]/45 via-[#38bdf8]/35 to-[#f3e5ab]/25 blur-md group-hover:blur-lg transition-all duration-300" />
         
         {/* Emblem Body housing official logo */}
-        <div className="relative h-full w-full rounded-full bg-[#0a0c12] border border-[#d4af37]/50 flex items-center justify-center p-0.5 shadow-xl overflow-hidden group-hover:border-[#d4af37] transition-colors">
+        <div className="relative h-full w-full rounded-full bg-[var(--brand-bg)] border border-[#d4af37]/50 flex items-center justify-center p-0.5 shadow-xl overflow-hidden group-hover:border-[#d4af37] transition-colors">
           <img
             src={logoSrc}
             alt="Sai Graphics Photography"
@@ -52,7 +52,7 @@ export const SGLogo: React.FC<SGLogoProps> = ({
 
       {/* Typography Brand Lockup */}
       <div className="flex flex-col">
-        <span className={`font-cinzel font-bold tracking-wider leading-none text-white ${titleSize}`}>
+        <span className={`font-cinzel font-bold tracking-wider leading-none text-primary ${titleSize}`}>
           SAI <span className="text-gold-gradient">GRAPHICS</span>
         </span>
         {showSubtext && (

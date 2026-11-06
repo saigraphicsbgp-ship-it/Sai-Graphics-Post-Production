@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant mode-light (&:where(.mode-light, .mode-light *));
 
 @layer base {
   :root {
@@ -13,12 +14,19 @@
     --brand-accent-dark: #aa820a;
     --brand-glow: rgba(212, 175, 55, 0.25);
     --brand-bg: #08090d;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-primary: rgba(255, 255, 255, 0.1);
+    --border-secondary: rgba(255, 255, 255, 0.05);
+    --bg-soft: rgba(255, 255, 255, 0.04);
+    --bg-muted: rgba(255, 255, 255, 0.02);
   }
 
   body {
     font-family: var(--font-sans);
     background-color: var(--brand-bg);
-    color: #f1f5f9;
+    color: var(--text-primary);
     transition: background-color 0.4s ease, color 0.4s ease;
   }
 
@@ -53,6 +61,22 @@
     --brand-glow: rgba(16, 185, 129, 0.28);
     --brand-bg: #060d09;
   }
+
+  body.mode-light {
+    --brand-bg: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --border-primary: rgba(0, 0, 0, 0.08);
+    --border-secondary: rgba(0, 0, 0, 0.04);
+    --bg-soft: rgba(0, 0, 0, 0.03);
+    --bg-muted: rgba(0, 0, 0, 0.01);
+  }
+
+  body.mode-light.theme-gold { --brand-bg: #fdfcf4; }
+  body.mode-light.theme-sapphire { --brand-bg: #f0f9ff; }
+  body.mode-light.theme-kodak { --brand-bg: #fffbf0; }
+  body.mode-light.theme-emerald { --brand-bg: #f0fdf4; }
 }
 
 .font-cinzel {
@@ -101,6 +125,22 @@
   -webkit-text-fill-color: transparent;
 }
 
+.mode-light .text-silver-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #475569 50%, #64748b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+
+.border-primary { border-color: var(--border-primary); }
+.border-secondary { border-color: var(--border-secondary); }
+
+.bg-soft { background-color: var(--bg-soft); }
+.bg-muted { background-color: var(--bg-muted); }
+
 .bg-gold-gradient {
   background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-light) 50%, var(--brand-accent-dark) 100%);
 }
@@ -123,11 +163,23 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.mode-light .glass-panel {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+}
+
 .glass-panel-gold {
   background: rgba(18, 17, 14, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--brand-accent);
+}
+
+.mode-light .glass-panel-gold {
+  background: rgba(255, 253, 240, 0.75);
+  border: 1px solid var(--brand-accent);
+  box-shadow: 0 10px 40px rgba(212, 175, 55, 0.08);
 }
 
 /* 35mm Analog Film Grain Overlay */
@@ -145,7 +197,7 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #08090d;
+  background: var(--brand-bg);
 }
 ::-webkit-scrollbar-thumb {
   background: #232733;

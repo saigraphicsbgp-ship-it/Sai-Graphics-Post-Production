@@ -13,6 +13,17 @@ import { FloatingActions } from './components/FloatingActions';
 import { AdminDashboard } from './components/AdminDashboard';
 import { GoogleDriveManager } from './components/GoogleDriveManager';
 import { AestheticProvider, useAesthetic } from './context/AestheticContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { db } from './firebase';
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  query, 
+  orderBy, 
+  onSnapshot 
+} from 'firebase/firestore';
 import { AestheticLookSwitcher } from './components/AestheticLookSwitcher';
 
 // Fallback initial data in case of initial network resolution
@@ -160,7 +171,7 @@ const defaultPortfolio: PortfolioItem[] = [
   {
     id: "port-dji-aerial",
     title: "DJI 360° Aerial Drone Cinema & Heritage Panorama",
-    category: "Cinematic Wedding Films",
+    category: "Cinematic Wedding Videos",
     description: "Ultra-wide 360° aerial cinematography and architectural panorama captured with DJI cinema drone by Sai Graphics Production.",
     imageUrl: "/assets/aistudio/DJI_0105_____d7ea3f0c.jpg",
     client: "Sai Graphics Production",
@@ -191,7 +202,7 @@ const defaultPortfolio: PortfolioItem[] = [
   {
     id: "port-3",
     title: "Sunset Symphony by the Ganges",
-    category: "Pre-Wedding Shoots",
+    category: "Pre-Wedding Photography",
     description: "Sunset pre-wedding shoot captured across Vikramshila ruins and Ganges riverbank with soft golden backlight.",
     imageUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
     client: "Rahul & Tanya",
@@ -201,7 +212,7 @@ const defaultPortfolio: PortfolioItem[] = [
   {
     id: "port-4",
     title: "Editorial Bridal Skin Retouching",
-    category: "Professional Photo Editing",
+    category: "Wedding Photography",
     description: "Micro-texture skin finishing preserving authentic skin pores while eliminating blemishes, matched to high-fashion print standards.",
     imageUrl: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=1200&q=80",
     client: "Kavya Sharma",
@@ -211,7 +222,7 @@ const defaultPortfolio: PortfolioItem[] = [
   {
     id: "port-5",
     title: "Silk City Royal Brand Identity",
-    category: "Creative Graphic Design",
+    category: "Wedding Photography",
     description: "Luxury Bhagalpur silk brand logo, golden embossed catalogue layout, and social media showcase deck.",
     imageUrl: "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=1200&q=80",
     client: "Bhagalpur Silk Heritage",
@@ -221,7 +232,7 @@ const defaultPortfolio: PortfolioItem[] = [
   {
     id: "port-6",
     title: "The Regal Velvet Photobook",
-    category: "Album Design",
+    category: "Wedding Photography",
     description: "Panoramic 18x24 lay-flat photo book with gold leaf edge gilding and velvet hardcover presentation.",
     imageUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1200&q=80",
     client: "Rajesh & Priya",
@@ -263,62 +274,73 @@ function StudioAppContent() {
   const [activeSection, setActiveSection] = useState<string>('home');
   const [showAdmin, setShowAdmin] = useState<boolean>(false);
   const [showDriveModal, setShowDriveModal] = useState<boolean>(false);
-  const [authToken, setAuthToken] = useState<string | null>(() => {
-    return localStorage.getItem('sai_graphics_admin_token');
-  });
   const [bookingService, setBookingService] = useState<string>('');
 
-  // Fetch live studio data from server API
+  // Fetch live studio data from Firestore
   const loadStudioData = useCallback(async () => {
     try {
       // 1. Settings
-      const contentRes = await fetch('/api/content');
-      if (contentRes.ok) {
-        const json = await contentRes.json();
-        if (json.success && json.data) {
-          setSettings(json.data);
-        }
+      const settingsDoc = await getDoc(doc(db, 'settings', 'global'));
+      if (settingsDoc.exists()) {
+        setSettings(settingsDoc.data() as StudioSettings);
       }
 
       // 2. Services
-      const servicesRes = await fetch('/api/services');
-      if (servicesRes.ok) {
-        const json = await servicesRes.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setServices(json.data);
-        }
+      const servicesSnap = await getDocs(query(collection(db, 'services'), orderBy('number', 'asc')));
+      const servicesList = servicesSnap.docs.map(d => ({ id: d.id, ...d.data() } as ServiceItem));
+      if (servicesList.length > 0) {
+        setServices(servicesList);
       }
 
       // 3. Portfolio & Before/After
-      const portfolioRes = await fetch('/api/portfolio');
-      if (portfolioRes.ok) {
-        const json = await portfolioRes.json();
-        if (json.success) {
-          if (Array.isArray(json.data) && json.data.length > 0) {
-            setPortfolio(json.data);
-          }
-          if (Array.isArray(json.beforeAfter) && json.beforeAfter.length > 0) {
-            setBeforeAfterDemos(json.beforeAfter);
-          }
-        }
+      const portfolioSnap = await getDocs(collection(db, 'portfolio'));
+      const portfolioList = portfolioSnap.docs.map(d => ({ id: d.id, ...d.data() } as PortfolioItem));
+      if (portfolioList.length > 0) {
+        setPortfolio(portfolioList);
       }
 
-      // 4. Testimonials & Client Feedback
-      const testimonialsRes = await fetch('/api/testimonials');
-      if (testimonialsRes.ok) {
-        const json = await testimonialsRes.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setTestimonials(json.data);
-        }
+      const baSnap = await getDocs(collection(db, 'beforeAfter'));
+      const baList = baSnap.docs.map(d => ({ id: d.id, ...d.data() } as BeforeAfterDemo));
+      if (baList.length > 0) {
+        setBeforeAfterDemos(baList);
+      }
+
+      // 4. Testimonials
+      const testSnap = await getDocs(query(collection(db, 'testimonials'), orderBy('date', 'desc')));
+      const testList = testSnap.docs.map(d => ({ id: d.id, ...d.data() } as TestimonialItem));
+      if (testList.length > 0) {
+        setTestimonials(testList);
       }
     } catch (err) {
-      console.warn('API fetch warning, using loaded state', err);
+      console.warn('Firestore fetch warning, using defaults', err);
     }
   }, []);
 
   useEffect(() => {
     loadStudioData();
   }, [loadStudioData]);
+
+  // Hash-based routing for Admin Dashboard
+  useEffect(() => {
+    const handleHashChange = () => {
+      setShowAdmin(window.location.hash === '#admin');
+    };
+    
+    // Check initial hash
+    handleHashChange();
+    
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const openAdmin = () => {
+    window.location.hash = 'admin';
+  };
+
+  const closeAdmin = () => {
+    window.location.hash = '';
+    setShowAdmin(false);
+  };
 
   // Handle smooth navigation
   const scrollToSection = (sectionId: string) => {
@@ -340,26 +362,15 @@ function StudioAppContent() {
     scrollToSection('contact');
   };
 
-  const handleLoginSuccess = (token: string) => {
-    setAuthToken(token);
-    localStorage.setItem('sai_graphics_admin_token', token);
-  };
-
-  const handleLogout = () => {
-    setAuthToken(null);
-    localStorage.removeItem('sai_graphics_admin_token');
-  };
-
   return (
-    <div className="relative bg-[#08090d] text-slate-100 min-h-screen selection:bg-[#d4af37]/30 selection:text-[#f3e5ab]">
+    <div className="relative bg-[var(--brand-bg)] text-primary min-h-screen selection:bg-[var(--brand-accent)]/30 selection:text-[var(--brand-accent-light)]">
       {/* Navigation Top Bar */}
       <Navbar
         settings={settings}
         activeSection={activeSection}
         onNavigate={scrollToSection}
-        onOpenAdmin={() => setShowAdmin(true)}
+        onOpenAdmin={openAdmin}
         onOpenDrive={() => setShowDriveModal(true)}
-        isAdminLoggedIn={!!authToken}
       />
 
       {/* Main Website Sections */}
@@ -392,6 +403,8 @@ function StudioAppContent() {
         <PortfolioGallery
           portfolio={portfolio}
           whatsappNumber={settings.whatsappNumber}
+          onRefreshPortfolio={loadStudioData}
+          onOpenAdmin={openAdmin}
         />
 
         {/* 6. Testimonials & Client Reviews Carousel */}
@@ -412,7 +425,7 @@ function StudioAppContent() {
       <Footer
         settings={settings}
         onNavigate={scrollToSection}
-        onOpenAdmin={() => setShowAdmin(true)}
+        onOpenAdmin={openAdmin}
       />
 
       {/* Floating Action Buttons (WhatsApp & Quick Call) */}
@@ -433,11 +446,8 @@ function StudioAppContent() {
           settings={settings}
           services={services}
           portfolio={portfolio}
-          onClose={() => setShowAdmin(false)}
+          onClose={closeAdmin}
           onRefreshData={loadStudioData}
-          authToken={authToken}
-          onLoginSuccess={handleLoginSuccess}
-          onLogout={handleLogout}
           onOpenDrive={() => setShowDriveModal(true)}
         />
       )}
@@ -453,8 +463,10 @@ function StudioAppContent() {
 
 export default function App() {
   return (
-    <AestheticProvider>
-      <StudioAppContent />
-    </AestheticProvider>
+    <AuthProvider>
+      <AestheticProvider>
+        <StudioAppContent />
+      </AestheticProvider>
+    </AuthProvider>
   );
 }

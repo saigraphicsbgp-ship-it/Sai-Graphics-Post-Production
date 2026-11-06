@@ -3,7 +3,7 @@ import { useAesthetic, AESTHETIC_THEMES, GalleryViewMode } from '../context/Aest
 import { Palette, Sparkles, X, Check, Film, LayoutGrid, Eye, Sliders, LucideIcon } from 'lucide-react';
 
 interface AestheticLookSwitcherProps {
-  variant?: 'nav' | 'floating' | 'inline';
+  variant?: 'nav' | 'floating' | 'inline' | 'compact';
 }
 
 export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ variant = 'nav' }) => {
@@ -19,36 +19,79 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
   ];
 
   const renderTrigger = () => {
+    // 1. Floating pill: positioned on the bottom-LEFT to avoid overlapping WhatsApp/Call icons on bottom-right
     if (variant === 'floating') {
       return (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-4 z-40 flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#0a0d14]/90 border border-white/20 hover:border-white/40 text-xs font-semibold text-white shadow-2xl backdrop-blur-md transition-all active:scale-95 cursor-pointer group"
+          className="fixed bottom-4 sm:bottom-5 left-4 sm:left-5 z-40 flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-[var(--brand-bg)]/95 border border-primary hover:border-[#d4af37]/60 text-xs font-semibold text-primary shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all active:scale-95 cursor-pointer group hover:brightness-110 pointer-events-auto select-none"
           title="Change Aesthetic Look & View"
         >
           <span
-            className="w-3 h-3 rounded-full transition-transform group-hover:scale-125 shadow-sm"
+            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
             style={{ backgroundColor: config.primaryColor, boxShadow: `0 0 10px ${config.primaryColor}` }}
           />
-          <Palette className="w-3.5 h-3.5 text-slate-300" />
-          <span className="hidden sm:inline">Aesthetic: {config.name.split(' ')[0]}</span>
+          <Palette className="w-3.5 h-3.5 shrink-0 text-secondary group-hover:text-primary transition-colors" />
+          <span className="whitespace-nowrap font-medium text-xs">
+            Aesthetic: <strong className="font-bold ml-0.5" style={{ color: config.secondaryColor }}>{config.name.split(' ')[0]}</strong>
+          </span>
         </button>
       );
     }
 
-    // Default 'nav' variant
+    // 2. Compact variant for mobile top-nav (avoids header clutter)
+    if (variant === 'compact') {
+      return (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-2 rounded-lg border border-primary bg-soft hover:bg-soft text-primary transition-all flex items-center justify-center cursor-pointer shrink-0"
+          title={`Aesthetic: ${config.name}`}
+          aria-label="Change studio look"
+        >
+          <span
+            className="w-2 h-2 rounded-full shrink-0 shadow-sm"
+            style={{ backgroundColor: config.primaryColor, boxShadow: `0 0 6px ${config.primaryColor}` }}
+          />
+          <Palette className="w-4 h-4 shrink-0 ml-1" style={{ color: config.primaryColor }} />
+        </button>
+      );
+    }
+
+    // 3. Full-width inline variant for drawers or dedicated sidebars
+    if (variant === 'inline') {
+      return (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-full flex items-center justify-between text-left text-sm py-2.5 px-3 rounded-lg border border-primary bg-soft hover:bg-soft text-primary transition-all cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5">
+            <span
+              className="w-3 h-3 rounded-full shrink-0 shadow-sm"
+              style={{ backgroundColor: config.primaryColor, boxShadow: `0 0 8px ${config.primaryColor}` }}
+            />
+            <Palette className="w-4 h-4 shrink-0" style={{ color: config.primaryColor }} />
+            <span className="font-medium text-xs sm:text-sm">
+              Studio Aesthetic: <strong style={{ color: config.secondaryColor }}>{config.name}</strong>
+            </span>
+          </div>
+          <span className="text-xs text-muted font-medium">Change</span>
+        </button>
+      );
+    }
+
+    // 4. Default 'nav' variant
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="whitespace-nowrap shrink-0 flex items-center gap-2 text-xs font-medium py-1.5 px-3 rounded-lg border border-white/10 hover:border-white/30 text-slate-200 hover:text-white transition-all bg-white/[0.04] hover:bg-white/[0.08] cursor-pointer"
+        className="whitespace-nowrap shrink-0 flex items-center gap-2 text-xs font-medium py-1.5 px-3 rounded-lg border border-primary hover:border-white/30 text-primary hover:text-primary transition-all bg-soft hover:bg-soft cursor-pointer"
         title="Customize Studio Aesthetic Look & Visual Tone"
       >
         <span
-          className="w-2.5 h-2.5 rounded-full shadow-sm"
+          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
           style={{ backgroundColor: config.primaryColor, boxShadow: `0 0 8px ${config.primaryColor}` }}
         />
-        <Palette className="w-3.5 h-3.5" style={{ color: config.primaryColor }} />
-        <span>Look: <strong style={{ color: config.secondaryColor }}>{config.name.split(' ')[0]}</strong></span>
+        <Palette className="w-3.5 h-3.5 shrink-0" style={{ color: config.primaryColor }} />
+        <span className="whitespace-nowrap">Look: <strong style={{ color: config.secondaryColor }}>{config.name.split(' ')[0]}</strong></span>
       </button>
     );
   };
@@ -59,25 +102,25 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#0c0e15] border border-white/15 p-6 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-lg rounded-2xl bg-[var(--brand-bg)] border border-primary p-6 shadow-2xl space-y-6">
             
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-white/10 pb-4">
+            <div className="flex items-start justify-between border-b border-primary pb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" style={{ color: config.primaryColor }} />
-                  <h3 className="font-cinzel text-lg sm:text-xl font-bold text-white tracking-wide">
+                  <h3 className="font-cinzel text-lg sm:text-xl font-bold text-primary tracking-wide">
                     STUDIO AESTHETIC & VIEW
                   </h3>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-muted mt-1">
                   Transform the visual atmosphere, color grading tone, and portfolio layout.
                 </p>
               </div>
 
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                className="p-1.5 text-muted hover:text-primary rounded-lg hover:bg-soft transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -85,7 +128,7 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
 
             {/* Section 1: Color Grading Themes */}
             <div className="space-y-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary flex items-center gap-2">
                 <Palette className="w-3.5 h-3.5" style={{ color: config.primaryColor }} />
                 <span>1. Visual Grading Tone</span>
               </label>
@@ -99,8 +142,8 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
                       onClick={() => setTheme(t.id)}
                       className={`text-left p-3 rounded-xl border transition-all cursor-pointer relative ${
                         isSelected
-                          ? 'bg-white/[0.08] border-white/40 shadow-lg'
-                          : 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
+                          ? 'bg-soft border-white/40 shadow-lg'
+                          : 'bg-muted border-primary hover:border-primary hover:bg-soft'
                       }`}
                       style={{
                         borderColor: isSelected ? t.primaryColor : undefined,
@@ -116,13 +159,13 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
                               boxShadow: `0 0 8px ${t.primaryColor}`,
                             }}
                           />
-                          <span className="text-xs font-bold text-white tracking-wide">
+                          <span className="text-xs font-bold text-primary tracking-wide">
                             {t.name}
                           </span>
                         </div>
                         {isSelected && <Check className="w-4 h-4 text-emerald-400" />}
                       </div>
-                      <p className="text-[11px] text-slate-400 leading-tight">
+                      <p className="text-[11px] text-muted leading-tight">
                         {t.tagline}
                       </p>
                     </button>
@@ -132,8 +175,8 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
             </div>
 
             {/* Section 2: Portfolio Gallery View Mode */}
-            <div className="space-y-3 pt-2 border-t border-white/10">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <div className="space-y-3 pt-2 border-t border-primary">
+              <label className="text-xs font-semibold uppercase tracking-wider text-secondary flex items-center gap-2">
                 <Sliders className="w-3.5 h-3.5" style={{ color: config.primaryColor }} />
                 <span>2. Portfolio Layout View</span>
               </label>
@@ -148,8 +191,8 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
                       onClick={() => setGalleryViewMode(m.id)}
                       className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
                         isSelected
-                          ? 'bg-white/[0.1] text-white border-white/40'
-                          : 'bg-white/[0.02] text-slate-400 hover:text-slate-200 border-white/10 hover:border-white/20'
+                          ? 'bg-white/[0.1] text-primary border-white/40'
+                          : 'bg-muted text-muted hover:text-primary border-primary hover:border-primary'
                       }`}
                       style={{
                         borderColor: isSelected ? config.primaryColor : undefined,
@@ -164,12 +207,12 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
             </div>
 
             {/* Section 3: Analog Film Grain Toggle */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+            <div className="pt-2 border-t border-primary flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <Film className="w-4 h-4 text-slate-400" />
+                <Film className="w-4 h-4 text-muted" />
                 <div>
-                  <span className="text-xs font-semibold text-slate-200">35mm Analog Film Grain</span>
-                  <p className="text-[11px] text-slate-400">Adds authentic subtle cinematic texture</p>
+                  <span className="text-xs font-semibold text-primary">35mm Analog Film Grain</span>
+                  <p className="text-[11px] text-muted">Adds authentic subtle cinematic texture</p>
                 </div>
               </div>
 
@@ -188,14 +231,14 @@ export const AestheticLookSwitcher: React.FC<AestheticLookSwitcherProps> = ({ va
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-white/10">
+            <div className="flex items-center justify-between pt-3 border-t border-primary">
               <button
                 onClick={() => {
                   setTheme('gold');
                   setFilmGrain(false);
                   setGalleryViewMode('editorial');
                 }}
-                className="text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="text-xs text-muted hover:text-primary transition-colors cursor-pointer"
               >
                 Reset Default Look
               </button>

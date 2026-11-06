@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { TestimonialItem } from '../types';
 import { useAesthetic } from '../context/AestheticContext';
+import { db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import {
   Star,
   Quote,
@@ -181,34 +183,32 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/testimonials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formName,
-          role: formRole,
-          location: formLocation,
-          serviceUsed: formService,
-          rating: formRating,
-          quote: formQuote,
-        })
-      });
+      const id = `rev-${Date.now()}`;
+      const newRev: TestimonialItem = {
+        id,
+        name: formName.trim(),
+        role: (formRole || 'Verified Client').trim(),
+        serviceUsed: (formService || 'Post Production Service').trim(),
+        location: (formLocation || 'Bhagalpur, Bihar').trim(),
+        rating: Number(formRating) || 5,
+        quote: formQuote.trim(),
+        avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80`,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        turnaround: 'Recent Project',
+        verified: true
+      };
 
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data) {
-          const newRev = json.data;
-          setItems((prev) => [newRev, ...prev]);
-          if (onReviewSubmitted) onReviewSubmitted(newRev);
-          setSubmitSuccess(true);
-          setTimeout(() => {
-            setShowReviewModal(false);
-            setSubmitSuccess(false);
-            setFormName('');
-            setFormQuote('');
-          }, 1800);
-        }
-      }
+      await setDoc(doc(db, 'testimonials', id), newRev);
+
+      setItems((prev) => [newRev, ...prev]);
+      if (onReviewSubmitted) onReviewSubmitted(newRev);
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setShowReviewModal(false);
+        setSubmitSuccess(false);
+        setFormName('');
+        setFormQuote('');
+      }, 1800);
     } catch (err) {
       console.error('Failed to submit review', err);
     } finally {
@@ -219,7 +219,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
   return (
     <section
       id="testimonials"
-      className="relative py-24 bg-[#090b10] border-t border-white/5 overflow-hidden transition-colors duration-500"
+      className="relative py-24 bg-[var(--brand-bg)] border-t border-secondary overflow-hidden transition-colors duration-500"
     >
       {/* Ambient Backlight Aura */}
       <div
@@ -233,7 +233,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="space-y-3 max-w-2xl">
             <div
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft border"
               style={{ borderColor: `${config.primaryColor}55` }}
             >
               <Sparkles className="w-3.5 h-3.5" style={{ color: config.primaryColor }} />
@@ -245,18 +245,18 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
               </span>
             </div>
 
-            <h2 className="font-cinzel text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            <h2 className="font-cinzel text-3xl sm:text-5xl font-extrabold text-primary tracking-tight leading-tight">
               VOICES OF <span className="text-gold-gradient">SATISFACTION</span>
             </h2>
 
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+            <p className="text-secondary text-sm sm:text-base leading-relaxed">
               Real testimonials from brides, grooms, regional cinematographers, and commercial studios who trust Sai Graphics for their most precious milestones.
             </p>
           </div>
 
           {/* Trust Metrics Pill & Write Review Action */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
+            <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-soft border border-primary backdrop-blur-md">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -266,8 +266,8 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                   />
                 ))}
               </div>
-              <span className="text-xs font-bold text-white">4.98 / 5.0</span>
-              <span className="text-xs text-slate-400">· 850+ Projects</span>
+              <span className="text-xs font-bold text-primary">4.98 / 5.0</span>
+              <span className="text-xs text-muted">· 850+ Projects</span>
             </div>
 
             <button
@@ -298,7 +298,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                 className={`px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                   isSelected
                     ? 'text-slate-950 font-bold shadow-md'
-                    : 'bg-white/[0.03] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/10'
+                    : 'bg-muted text-secondary hover:text-primary hover:bg-soft border border-primary'
                 }`}
                 style={{
                   backgroundColor: isSelected ? config.primaryColor : undefined,
@@ -320,7 +320,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
           onMouseLeave={() => setIsPaused(false)}
         >
           {totalSlides === 0 ? (
-            <div className="text-center py-16 text-slate-400">
+            <div className="text-center py-16 text-muted">
               No reviews found in this category.
             </div>
           ) : (
@@ -337,20 +337,20 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                     className="w-full shrink-0 px-2 sm:px-4"
                   >
                     <div
-                      className="relative rounded-3xl p-6 sm:p-10 bg-[#0e1118]/80 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-500 hover:border-white/20"
+                      className="relative rounded-3xl p-6 sm:p-10 bg-[var(--brand-bg)]/80 backdrop-blur-xl border border-primary shadow-2xl transition-all duration-500 hover:border-primary"
                       style={{
                         boxShadow: `0 10px 40px rgba(0,0,0,0.4)`,
                       }}
                     >
                       {/* Decorative Watermark Quote Icon */}
                       <div className="absolute top-6 right-8 opacity-10 pointer-events-none">
-                        <Quote className="w-24 h-24 sm:w-32 sm:h-32 text-white" />
+                        <Quote className="w-24 h-24 sm:w-32 sm:h-32 text-primary" />
                       </div>
 
                       <div className="relative z-10 flex flex-col justify-between gap-6">
                         
                         {/* Top Metadata: Rating, Service Used, and Verification */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-primary pb-4">
                           <div className="flex items-center gap-1.5">
                             {[...Array(item.rating)].map((_, i) => (
                               <Star
@@ -359,21 +359,21 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                                 style={{ color: config.primaryColor }}
                               />
                             ))}
-                            <span className="text-xs font-bold text-white ml-2">
+                            <span className="text-xs font-bold text-primary ml-2">
                               5.0 Excellence
                             </span>
                           </div>
 
                           <div className="flex items-center gap-3 text-xs">
                             <span
-                              className="font-mono px-2.5 py-1 rounded-md bg-white/[0.05] border border-white/10"
+                              className="font-mono px-2.5 py-1 rounded-md bg-soft border border-primary"
                               style={{ color: config.secondaryColor }}
                             >
                               {item.serviceUsed}
                             </span>
                             {item.turnaround && (
-                              <span className="flex items-center gap-1 text-slate-400 font-mono hidden sm:flex">
-                                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="flex items-center gap-1 text-muted font-mono hidden sm:flex">
+                                <Clock className="w-3.5 h-3.5 text-muted" />
                                 {item.turnaround}
                               </span>
                             )}
@@ -401,7 +401,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
 
                             <div>
                               <div className="flex items-center gap-2">
-                                <h4 className="font-cinzel text-base sm:text-lg font-bold text-white">
+                                <h4 className="font-cinzel text-base sm:text-lg font-bold text-primary">
                                   {item.name}
                                 </h4>
                                 {item.verified && (
@@ -413,13 +413,13 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-slate-400 mt-0.5">
-                                {item.role} · <span className="text-slate-300">{item.location}</span>
+                              <p className="text-xs text-muted mt-0.5">
+                                {item.role} · <span className="text-secondary">{item.location}</span>
                               </p>
                             </div>
                           </div>
 
-                          <div className="text-right hidden sm:block text-xs text-slate-400 font-mono">
+                          <div className="text-right hidden sm:block text-xs text-muted font-mono">
                             <span>Project Finished: {item.date}</span>
                           </div>
                         </div>
@@ -437,8 +437,8 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
             <div className="flex items-center justify-between pt-8 px-2">
               
               {/* Slide Counter */}
-              <div className="text-xs font-mono text-slate-400">
-                <span className="font-bold text-white">
+              <div className="text-xs font-mono text-muted">
+                <span className="font-bold text-primary">
                   0{currentIndex + 1}
                 </span>
                 <span className="mx-1">/</span>
@@ -470,14 +470,14 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={handlePrev}
-                  className="p-3 rounded-full bg-white/[0.06] hover:bg-white/[0.14] text-white border border-white/10 transition-all cursor-pointer active:scale-95"
+                  className="p-3 rounded-full bg-soft hover:bg-soft text-primary border border-primary transition-all cursor-pointer active:scale-95"
                   aria-label="Previous client review"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="p-3 rounded-full bg-white/[0.06] hover:bg-white/[0.14] text-white border border-white/10 transition-all cursor-pointer active:scale-95"
+                  className="p-3 rounded-full bg-soft hover:bg-soft text-primary border border-primary transition-all cursor-pointer active:scale-95"
                   aria-label="Next client review"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -495,24 +495,24 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
       {/* ========================================================================= */}
       {showReviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in">
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#0d1017] border border-white/15 p-6 shadow-2xl space-y-5">
+          <div className="relative w-full max-w-lg rounded-2xl bg-[var(--brand-bg)] border border-primary p-6 shadow-2xl space-y-5">
             
-            <div className="flex items-start justify-between border-b border-white/10 pb-4">
+            <div className="flex items-start justify-between border-b border-primary pb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <Heart className="w-5 h-5 text-rose-500 fill-current" />
-                  <h3 className="font-cinzel text-lg sm:text-xl font-bold text-white tracking-wide">
+                  <h3 className="font-cinzel text-lg sm:text-xl font-bold text-primary tracking-wide">
                     SHARE YOUR EXPERIENCE
                   </h3>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-muted mt-1">
                   How was your post-production or album finishing journey with Sai Graphics?
                 </p>
               </div>
 
               <button
                 onClick={() => setShowReviewModal(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                className="p-1.5 text-muted hover:text-primary rounded-lg hover:bg-soft transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -521,15 +521,15 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
             {submitSuccess ? (
               <div className="text-center py-8 space-y-3">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
-                <h4 className="font-cinzel text-lg font-bold text-white">Thank You So Much!</h4>
-                <p className="text-xs text-slate-300">
+                <h4 className="font-cinzel text-lg font-bold text-primary">Thank You So Much!</h4>
+                <p className="text-xs text-secondary">
                   Your review has been successfully submitted and added to our testimonials gallery.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleReviewSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px]">
+                  <label className="block text-secondary font-semibold mb-1 uppercase tracking-wider text-[11px]">
                     Your Full Name / Couple Names *
                   </label>
                   <input
@@ -538,19 +538,19 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="e.g. Abhishek & Sneha Kumar"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#d4af37]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-soft border border-primary text-primary placeholder-slate-500 focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px]">
+                    <label className="block text-secondary font-semibold mb-1 uppercase tracking-wider text-[11px]">
                       Your Role
                     </label>
                     <select
                       value={formRole}
                       onChange={(e) => setFormRole(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl bg-[#141822] border border-white/15 text-white focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2.5 rounded-xl bg-[#141822] border border-primary text-primary focus:outline-none focus:border-[#d4af37]"
                     >
                       <option value="Wedding Couple">Wedding Couple</option>
                       <option value="Bride / Groom">Bride / Groom</option>
@@ -562,7 +562,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px]">
+                    <label className="block text-secondary font-semibold mb-1 uppercase tracking-wider text-[11px]">
                       Location
                     </label>
                     <input
@@ -570,13 +570,13 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                       value={formLocation}
                       onChange={(e) => setFormLocation(e.target.value)}
                       placeholder="e.g. Bhagalpur, Bihar"
-                      className="w-full px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3 py-2.5 rounded-xl bg-soft border border-primary text-primary placeholder-slate-500 focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px]">
+                  <label className="block text-secondary font-semibold mb-1 uppercase tracking-wider text-[11px]">
                     Service Delivered
                   </label>
                   <input
@@ -584,13 +584,13 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                     value={formService}
                     onChange={(e) => setFormService(e.target.value)}
                     placeholder="e.g. 4K Cinematic Wedding Film or Lay-Flat Album"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#d4af37]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-soft border border-primary text-primary placeholder-slate-500 focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
 
                 {/* Rating Stars Picker */}
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1.5 uppercase tracking-wider text-[11px]">
+                  <label className="block text-secondary font-semibold mb-1.5 uppercase tracking-wider text-[11px]">
                     Rating ({formRating} Stars)
                   </label>
                   <div className="flex items-center gap-2">
@@ -612,7 +612,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px]">
+                  <label className="block text-secondary font-semibold mb-1 uppercase tracking-wider text-[11px]">
                     Your Feedback / Experience *
                   </label>
                   <textarea
@@ -621,15 +621,15 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                     value={formQuote}
                     onChange={(e) => setFormQuote(e.target.value)}
                     placeholder="Share how Sai Graphics helped with your wedding film, photo retouching, or album designing..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#d4af37] resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-soft border border-primary text-primary placeholder-slate-500 focus:outline-none focus:border-[#d4af37] resize-none"
                   />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-primary">
                   <button
                     type="button"
                     onClick={() => setShowReviewModal(false)}
-                    className="px-4 py-2 rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-xl text-muted hover:text-primary transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
